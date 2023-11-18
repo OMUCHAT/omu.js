@@ -1,20 +1,19 @@
-import { Model } from "src/interface/model";
-import { Client } from "../../client";
-import { Keyable } from "../../interface/keyable";
-import type { Extension, ExtensionType } from "../extension";
-import { defineExtensionType } from "../extension";
-import type { List, ListListener, ListType } from "./list";
-export { List, ListListener, ListType };
+import { type Client } from "../../client";
+import { type Keyable, type Model } from "../../interface";
+import { defineExtensionType, type Extension, type ExtensionType } from "../extension";
+
+import { type List, type ListListener, type ListType } from "./list";
+export * from "./list";
 
 
 type ListEvent = { type: string; }
 export const ListExtensionType: ExtensionType<ListExtension> = defineExtensionType("list", (client: Client) => new ListExtension(client));
-export const ListItemAddEvent = ListExtensionType.defineEventType<ListEvent & { items: Keyable[] }>("list_item_add");
+export const ListItemAddEvent = ListExtensionType.defineEventType<ListEvent & { items: any[] }>("list_item_add");
 export const ListItemRemoveEvent = ListExtensionType.defineEventType<ListEvent & { items: string[] }>("list_item_remove");
-export const ListItemSetEvent = ListExtensionType.defineEventType<ListEvent & { items: Keyable[] }>("list_item_set");
+export const ListItemSetEvent = ListExtensionType.defineEventType<ListEvent & { items: any[] }>("list_item_set");
 export const ListItemClearEvent = ListExtensionType.defineEventType<ListEvent>("list_item_clear");
-export const ListItemGetEndpoint = ListExtensionType.defineEndpointType<ListEvent & { items: string[] }, Record<string, Keyable>>("list_item_get");
-export const ListItemFetchEndpoint = ListExtensionType.defineEndpointType<ListEvent & { limit: number, cursor?: string }, Record<string, Keyable>>("list_item_fetch");
+export const ListItemGetEndpoint = ListExtensionType.defineEndpointType<ListEvent & { items: string[] }, Record<string, any>>("list_item_get");
+export const ListItemFetchEndpoint = ListExtensionType.defineEndpointType<ListEvent & { limit: number, cursor?: string }, Record<string, any>>("list_item_fetch");
 export const ListItemSizeEndpoint = ListExtensionType.defineEndpointType<ListEvent, number>("list_item_size");
 
 
@@ -63,14 +62,14 @@ export class ListExtension implements Extension {
 
 
 class ListImpl<T extends Keyable> implements List<T> {
-    private itemCache: Record<string, T>;
+    public cache: Map<string, T>;
     private readonly listeners: ListListener<T>[];
 
     constructor(
         private readonly client: Client,
         private readonly type: ListType<T>,
     ) {
-        this.itemCache = {};
+        this.cache = new Map();
         this.listeners = [];
 
         this.client.events.on(ListItemAddEvent, (event) => {
@@ -85,9 +84,10 @@ class ListImpl<T extends Keyable> implements List<T> {
                 return [key, item];
             });
             const newItems = Object.fromEntries(items);
-            Object.assign(this.itemCache, newItems);
+            this.cache = new Map([...this.cache, ...newItems]);
             this.listeners.forEach((listener) => {
                 listener.onItemAdd?.(newItems);
+                listener.onCacheUpdate?.(this.cache);
             });
         });
         this.client.events.on(ListItemRemoveEvent, (event) => {
@@ -95,40 +95,44 @@ class ListImpl<T extends Keyable> implements List<T> {
                 return;
             }
             const items = event.items;
-            const removedItems = items.map((key) => {
-                const item = this.itemCache[key];
-                delete this.itemCache[key];
+            items.forEach((key) => {
+                const item = this.cache.get(key);
+                if (!item) {
+                    throw new Error(`No item for key ${key}`);
+                }
+                this.cache.delete(key);
                 return item;
             });
             this.listeners.forEach((listener) => {
                 listener.onItemRemove?.(items);
+                listener.onCacheUpdate?.(this.cache);
             });
         });
         this.client.events.on(ListItemSetEvent, (event) => {
             if (event.type !== this.type.key) {
                 return;
             }
-            const items = Object.entries(event.items).map(([key, data]) => {
+            const items = new Map(Object.entries(event.items).map(([key, data]) => {
                 const item = this.type.deserialize(data);
                 if (!item) {
                     throw new Error(`Failed to deserialize item ${key}`);
                 }
                 return [key, item];
-            });
-            const newItems = Object.fromEntries(items);
-            Object.assign(this.itemCache, newItems);
+            }));
+            this.cache = new Map([...this.cache, ...items]);
             this.listeners.forEach((listener) => {
-                listener.onItemSet?.(newItems);
+                listener.onItemSet?.(items);
+                listener.onCacheUpdate?.(this.cache);
             });
         });
         this.client.events.on(ListItemClearEvent, (event) => {
             if (event.type !== this.type.key) {
                 return;
             }
-            const items = Object.keys(this.itemCache);
-            this.itemCache = {};
+            this.cache = new Map();
             this.listeners.forEach((listener) => {
                 listener.onItemClear?.();
+                listener.onCacheUpdate?.(this.cache);
             });
         });
     }
@@ -145,21 +149,21 @@ class ListImpl<T extends Keyable> implements List<T> {
     }
 
     async get(key: string): Promise<T | null> {
-        if (this.itemCache[key]) {
-            return this.itemCache[key];
+        if (this.cache.has(key)) {
+            return this.cache.get(key) ?? null;
         }
-        const items = await this.client.endpoint.call(ListItemGetEndpoint, {
+        const res = await this.client.endpoint.call(ListItemGetEndpoint, {
             type: this.type.key,
             items: [key],
         });
-        Object.entries(items).forEach(([key, data]) => {
+        Object.entries(res).forEach(([key, data]) => {
             const item = this.type.deserialize(data);
             if (!item) {
                 throw new Error(`Failed to deserialize item ${key}`);
             }
-            this.itemCache[key] = item;
+            this.cache.set(key, item);
         });
-        return this.itemCache[key];
+        return this.cache.get(key) ?? null;
     }
 
     async set(...items: T[]): Promise<void> {
@@ -195,25 +199,29 @@ class ListImpl<T extends Keyable> implements List<T> {
         });
     }
 
-    async fetch(limit: number, cursor?: string): Promise<Record<string, T>> {
-        const items = Object.entries(await this.client.endpoint.call(ListItemFetchEndpoint, {
+    async fetch(limit: number, cursor?: string): Promise<Map<string, T>> {
+        const res = await this.client.endpoint.call(ListItemFetchEndpoint, {
             type: this.type.key,
             cursor,
             limit,
-        })).map(([key, data]) => {
+        })
+        const items = new Map(Object.entries(res).map(([key, data]) => {
             const item = this.type.deserialize(data);
             if (!item) {
                 throw new Error(`Failed to deserialize item ${key}`);
             }
-            this.itemCache[key] = item;
+            this.cache.set(key, item);
             return [key, item];
+        }));
+        this.listeners.forEach((listener) => {
+            listener.onCacheUpdate?.(this.cache);
         });
-        return Object.fromEntries(items);
+        return items;
     }
 
     async *iterator(): AsyncIterator<T> {
-        let cursor: string | undefined = undefined;
-        let items: Record<string, T> = {};
+        const cursor: string | undefined = undefined;
+        let items: Map<string, T> = new Map();
         while (true) {
             items = await this.fetch(100, cursor);
             if (Object.keys(items).length === 0) {

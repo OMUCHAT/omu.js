@@ -1,4 +1,4 @@
-export interface EventData<T = any> {
+export interface EventJson<T = any> {
     readonly type: string;
     readonly data: T;
 }

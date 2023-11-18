@@ -1,6 +1,6 @@
-import { EndpointType } from "src/endpoint/endpoint";
-import type { Client } from "../client";
-import { EventType } from "../event/event";
+import { type Client } from "src/client";
+import { type EndpointType } from "src/endpoint";
+import { type EventType } from "src/event";
 
 export interface Extension {
 }

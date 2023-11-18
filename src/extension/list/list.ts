@@ -1,6 +1,7 @@
 import { Keyable } from "src/interface/keyable";
 
 export interface List<T extends Keyable> {
+    readonly cache: Map<string, T>;
     get(key: string): Promise<T | null>;
     set(...item: T[]): Promise<void>;
     add(...item: T[]): Promise<void>;
@@ -11,15 +12,16 @@ export interface List<T extends Keyable> {
     off(listener: ListListener<T>): void;
 
     iterator(): AsyncIterator<T>;
-    fetch(limit: number, cursor?: string): Promise<Record<string, T>>;
+    fetch(limit: number, cursor?: string): Promise<Map<string, T>>;
     size(): Promise<number>;
 }
 
 export interface ListListener<T extends Keyable> {
-    onItemAdd?(items: Record<string, T>): void;
+    onItemAdd?(items: Map<string, T>): void;
     onItemRemove?(items: string[]): void;
-    onItemSet?(items: Record<string, T>): void;
+    onItemSet?(items: Map<string, T>): void;
     onItemClear?(): void;
+    onCacheUpdate?(cache: Map<string, T>): void;
 }
 
 export interface ListType<T extends Keyable, D = any> {

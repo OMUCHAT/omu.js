@@ -1,25 +1,10 @@
-import type { Client, ClientListener } from "./client";
-import type { Connection, ConnectionListener, ConnectionStatus, ServerAddress } from "./connection/connection";
-import { WebsocketConnection } from "./connection/websocket-connection";
-import { Endpoint } from "./endpoint/endpoint";
-import { HttpEndpoint } from "./endpoint/http-endpoint";
-import type { EventData, EventType } from "./event/event";
-import { EVENTS, type EventRegistry } from "./event/event-registry";
-import { ChatExtensionType } from "./extension/chat";
-import type { Extension, ExtensionType } from "./extension/extension";
-import type { ExtensionRegistry } from "./extension/extension-registry";
-import { ListExtensionType } from "./extension/list";
-import { ServerExtensionType } from "./extension/server";
-import { App } from "./extension/server/model/app";
-
-export {
-    App, Client,
-    ClientListener,
-    Connection,
-    ConnectionListener, ConnectionStatus, EVENTS, EventData, EventRegistry,
-    EventType, Extension, ExtensionRegistry,
-    ExtensionType, ServerAddress, WebsocketConnection
-};
+import { type Client, type ClientListener } from "./client";
+import { type Connection, type ConnectionListener } from "./connection";
+import { HttpEndpoint, type Endpoint } from "./endpoint";
+import { EVENTS, type EventData, type EventRegistry, type EventType } from "./event";
+import { App, ChatExtensionType, ListExtensionType, ServerExtensionType, type Extension, type ExtensionRegistry, type ExtensionType } from "./extension";
+export * from "./client";
+export * from "./extension";
 
 class EventRegistryImpl implements EventRegistry {
     private readonly eventMap: Record<string, {
@@ -111,6 +96,7 @@ class ExtensionRegistryImpl implements ExtensionRegistry {
 }
 
 export class OmuClient implements Client, ConnectionListener {
+    readonly app: App;
     readonly connection: Connection;
     readonly endpoint: Endpoint;
     readonly events: EventRegistry;
@@ -119,13 +105,15 @@ export class OmuClient implements Client, ConnectionListener {
     public running: boolean;
 
     constructor(options: {
+        app: App;
         connection: Connection;
         endpoint?: Endpoint;
         eventsRegistry?: EventRegistry;
         extensionRegistry?: ExtensionRegistry;
         extensions?: ExtensionType<Extension>[];
     }) {
-        const { connection, endpoint, eventsRegistry, extensionRegistry, extensions } = options;
+        const { app, connection, endpoint, eventsRegistry, extensionRegistry, extensions } = options;
+        this.app = app;
         this.connection = connection;
         this.endpoint = endpoint ?? new HttpEndpoint(connection.address);
 
@@ -148,11 +136,7 @@ export class OmuClient implements Client, ConnectionListener {
     }
 
     onConnect(): void {
-        this.send(EVENTS.Connect, new App({
-            name: "omu-client",
-            version: "0.1.0",
-            group: "omu",
-        }));
+        this.send(EVENTS.Connect, this.app);
     }
 
     onDisconnect(): void {

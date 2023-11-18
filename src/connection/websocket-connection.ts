@@ -1,5 +1,5 @@
-import type { EventData } from "../event/event";
-import type { Connection, ConnectionListener, ServerAddress } from "./connection";
+import type { EventJson } from "../event/event";
+import type { Connection, ConnectionListener, ConnectionStatus, ServerAddress } from "./connection";
 
 export class WebsocketConnection implements Connection {
     public connected: boolean;
@@ -13,11 +13,21 @@ export class WebsocketConnection implements Connection {
         this.socket = null;
     }
 
-    send(event: EventData): void {
+    send(event: EventJson): void {
         if (!this.connected || !this.socket) {
             throw new Error("Not connected");
         }
         this.socket.send(JSON.stringify(event));
+    }
+
+    status(): ConnectionStatus {
+        if (this.connected) {
+            return "connected";
+        }
+        if (this.socket) {
+            return "connecting";
+        }
+        return "disconnected";
     }
 
     private wsEndpoint() {
@@ -33,14 +43,14 @@ export class WebsocketConnection implements Connection {
             this.connected = true;
             this.listeners.forEach((listener) => {
                 listener.onConnect?.();
-                listener.onStatus?.("connected");
+                listener.onStatusChange?.("connected");
             });
         };
         this.socket.onclose = () => {
             this.connected = false;
             this.listeners.forEach((listener) => {
                 listener.onDisconnect?.();
-                listener.onStatus?.("disconnected");
+                listener.onStatusChange?.("disconnected");
             });
         };
         this.socket.onmessage = (event) => {

@@ -1,8 +1,11 @@
-import { Client } from "../../client";
-import type { Extension, ExtensionType } from "../extension";
-import { defineExtensionType } from "../extension";
-import { List, ListExtensionType, defineListTypeModel } from "../list";
-import { App, AppJson } from "./model/app";
+import { type Client } from "../../client";
+import { defineExtensionType, type Extension, type ExtensionType } from "../extension";
+import { defineListTypeModel, ListExtensionType } from "../list";
+import { type List } from "../list/list";
+
+import { App, type AppJson } from "./model";
+export * from "./model";
+
 
 export const ServerExtensionType: ExtensionType<ServerExtension> = defineExtensionType("server", (client: Client) => new ServerExtension(client), () => [ListExtensionType]);
 
@@ -18,10 +21,5 @@ export class ServerExtension implements Extension {
     onInitialized(): void {
         const listExtension = this.client.extensions.get(ListExtensionType);
         this.apps = listExtension.register(AppsListKey);
-        this.apps.on({
-            onItemSet(items) {
-                console.log("onItemSet", items);
-            },
-        })
     }
 }
