@@ -1,5 +1,6 @@
 import type { ConnectionListener } from "../connection/connection";
 import { App, AppJson } from "../extension/server/model/app";
+
 import type { EventType } from "./event";
 
 export interface EventRegistry extends ConnectionListener {

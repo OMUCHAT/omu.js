@@ -1,4 +1,5 @@
 import type { EventJson } from "../event/event";
+
 import type { Connection, ConnectionListener, ConnectionStatus, ServerAddress } from "./connection";
 
 export class WebsocketConnection implements Connection {
@@ -37,6 +38,9 @@ export class WebsocketConnection implements Connection {
     }
 
     connect() {
+        if (this.socket && !this.connected) {
+            throw new Error("Already connecting");
+        }
         this.close();
         this.socket = new WebSocket(this.wsEndpoint());
         this.socket.onopen = () => {

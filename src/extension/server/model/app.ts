@@ -1,4 +1,5 @@
 import { Model } from "src/interface/model";
+
 import { Keyable } from "../../../interface/keyable";
 
 export interface AppJson {

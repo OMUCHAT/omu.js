@@ -16,7 +16,7 @@ export * from "./model";
 
 
 export const ChatExtensionType: ExtensionType<ChatExtension> = defineExtensionType("chat", (client: Client) => new ChatExtension(client), () => [ListExtensionType]);
-const MessagesListKey = defineListTypeModel<Message, MessageJson>(ChatExtensionType, "messages", (json) => new Message(json));
+const MessagesListKey = defineListTypeModel<Message, MessageJson>(ChatExtensionType, "messages", (json) => Message.fromJson(json));
 const ChannelsListKey = defineListTypeModel<Channel, ChannelJson>(ChatExtensionType, "channels", (json) => new Channel(json));
 const ProvidersListKey = defineListTypeModel<Provider, ProviderJson>(ChatExtensionType, "providers", (json) => new Provider(json));
 const RoomsListKey = defineListTypeModel<Room, RoomJson>(ChatExtensionType, "rooms", (json) => new Room(json));

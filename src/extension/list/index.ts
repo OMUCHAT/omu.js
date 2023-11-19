@@ -76,17 +76,16 @@ class ListImpl<T extends Keyable> implements List<T> {
             if (event.type !== this.type.key) {
                 return;
             }
-            const items = Object.entries(event.items).map(([key, data]) => {
+            const items = new Map(Object.entries(event.items).map(([key, data]) => {
                 const item = this.type.deserialize(data);
                 if (!item) {
                     throw new Error(`Failed to deserialize item ${key}`);
                 }
                 return [key, item];
-            });
-            const newItems = Object.fromEntries(items);
-            this.cache = new Map([...this.cache, ...newItems]);
+            }));
+            this.cache = new Map([...this.cache, ...items]);
             this.listeners.forEach((listener) => {
-                listener.onItemAdd?.(newItems);
+                listener.onItemAdd?.(items);
                 listener.onCacheUpdate?.(this.cache);
             });
         });

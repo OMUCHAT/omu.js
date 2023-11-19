@@ -1,5 +1,6 @@
 import axios from "axios";
 import { ServerAddress } from "src/connection/connection";
+
 import { Endpoint, EndpointType } from "./endpoint";
 
 export class HttpEndpoint implements Endpoint {

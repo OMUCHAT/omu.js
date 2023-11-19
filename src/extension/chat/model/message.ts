@@ -1,7 +1,8 @@
 import { Keyable } from "src/interface/keyable";
 import { Model } from "src/interface/model";
+
 import { Author, AuthorJson } from "./author";
-import { Content } from "./content";
+import { Content, ContentComponent, ContentJson } from "./content";
 import { Gift, GiftJson } from "./gift";
 import { Paid, PaidJson } from "./paid";
 
@@ -9,7 +10,7 @@ import { Paid, PaidJson } from "./paid";
 export interface MessageJson {
     room_id: string;
     id: string;
-    content?: Content;
+    content?: ContentJson;
     author?: AuthorJson;
     paid?: PaidJson;
     gift?: GiftJson;
@@ -26,14 +27,34 @@ export class Message implements Keyable, Model<MessageJson> {
     gift?: Gift;
     created_at?: Date;
 
-    constructor(info: MessageJson) {
-        this.room_id = info.room_id;
-        this.id = info.id;
-        this.content = info.content;
-        this.author = info.author && new Author(info.author);
-        this.paid = info.paid && new Paid(info.paid);
-        this.gift = info.gift && new Gift(info.gift);
-        this.created_at = info.created_at ? new Date(info.created_at) : undefined;
+    constructor(options: {
+        room_id: string;
+        id: string;
+        content?: Content;
+        author?: Author;
+        paid?: Paid;
+        gift?: Gift;
+        created_at?: Date;
+    }) {
+        this.room_id = options.room_id;
+        this.id = options.id;
+        this.content = options.content;
+        this.author = options.author;
+        this.paid = options.paid;
+        this.gift = options.gift;
+        this.created_at = options.created_at;
+    }
+
+    static fromJson(info: MessageJson): Message {
+        return new Message({
+            room_id: info.room_id,
+            id: info.id,
+            content: info.content && ContentComponent.fromJson(info.content),
+            author: info.author && new Author(info.author),
+            paid: info.paid && new Paid(info.paid),
+            gift: info.gift && new Gift(info.gift),
+            created_at: info.created_at ? new Date(info.created_at) : undefined,
+        })
     }
 
     key(): string {
@@ -44,7 +65,7 @@ export class Message implements Keyable, Model<MessageJson> {
         return {
             room_id: this.room_id,
             id: this.id,
-            content: this.content,
+            content: this.content && this.content.json(),
             author: this.author && this.author.json(),
             paid: this.paid && this.paid.json(),
             gift: this.gift && this.gift.json(),

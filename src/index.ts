@@ -141,7 +141,7 @@ export class OmuClient implements Client, ConnectionListener {
 
     onDisconnect(): void {
         if (this.running) {
-            this.connection.connect();
+            // this.connection.connect();
         }
     }
 

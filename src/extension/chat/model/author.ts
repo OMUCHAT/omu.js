@@ -1,5 +1,6 @@
 import { Keyable } from "src/interface/keyable";
 import { Model } from "src/interface/model";
+
 import { Role, RoleJson } from "./role";
 
 export interface AuthorJson {

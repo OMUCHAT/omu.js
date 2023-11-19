@@ -1,4 +1,5 @@
 import { ConnectionListener } from "../connection/connection";
+
 import { Extension, ExtensionType } from "./extension";
 
 export interface ExtensionRegistry extends ConnectionListener {
