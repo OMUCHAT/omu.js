@@ -14,7 +14,7 @@ export interface Connection extends ClientListener {
     readonly connected: boolean;
 
     connect(): void;
-    close(): void;
+    disconnect(): void;
     send(event: EventJson): void;
     status(): ConnectionStatus;
 

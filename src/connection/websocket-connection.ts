@@ -41,7 +41,7 @@ export class WebsocketConnection implements Connection {
         if (this.socket && !this.connected) {
             throw new Error("Already connecting");
         }
-        this.close();
+        this.disconnect();
         this.socket = new WebSocket(this.wsEndpoint());
         this.socket.onopen = () => {
             this.connected = true;
@@ -65,7 +65,7 @@ export class WebsocketConnection implements Connection {
         };
     }
 
-    close() {
+    disconnect() {
         if (this.socket) {
             this.socket.close();
             this.socket = null;
@@ -77,7 +77,7 @@ export class WebsocketConnection implements Connection {
     }
 
     onStopped(): void {
-        this.close();
+        this.disconnect();
     }
 
     on(listener: ConnectionListener): void {
