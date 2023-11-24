@@ -1,12 +1,12 @@
 import axios from "axios";
-import { ServerAddress } from "src/connection/connection";
+import { Address } from "src/connection/connection";
 
 import { Endpoint, EndpointType } from "./endpoint";
 
 export class HttpEndpoint implements Endpoint {
-    readonly address: ServerAddress;
+    readonly address: Address;
 
-    constructor(address: ServerAddress) {
+    constructor(address: Address) {
         this.address = address;
     }
 

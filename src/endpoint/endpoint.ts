@@ -1,4 +1,4 @@
-import { ServerAddress } from "../connection/connection";
+import { Address } from "../connection/connection";
 
 export interface EndpointType<ReqType = any, ResType = any, ReqData = any, ResData = any> {
     type: string;
@@ -8,7 +8,7 @@ export interface EndpointType<ReqType = any, ResType = any, ReqData = any, ResDa
 
 
 export interface Endpoint {
-    readonly address: ServerAddress;
+    readonly address: Address;
 
     call<D, T>(endpoint: EndpointType<D, T>, data: D): Promise<T>;
 }

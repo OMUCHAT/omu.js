@@ -1,14 +1,14 @@
 import type { EventJson } from "../event/event";
 
-import type { Connection, ConnectionListener, ConnectionStatus, ServerAddress } from "./connection";
+import type { Address, Connection, ConnectionListener, ConnectionStatus } from "./connection";
 
 export class WebsocketConnection implements Connection {
     public connected: boolean;
-    readonly address: ServerAddress;
+    readonly address: Address;
     private readonly listeners: ConnectionListener[] = [];
     private socket: WebSocket | null;
 
-    constructor(address: ServerAddress) {
+    constructor(address: Address) {
         this.address = address;
         this.connected = false;
         this.socket = null;

@@ -1,7 +1,7 @@
 import { ClientListener } from "../client";
 import type { EventJson } from "../event/event";
 
-export interface ServerAddress {
+export interface Address {
     host: string;
     port: number;
     secure: boolean;
@@ -10,7 +10,7 @@ export interface ServerAddress {
 export type ConnectionStatus = "connecting" | "connected" | "disconnected";
 
 export interface Connection extends ClientListener {
-    readonly address: ServerAddress;
+    readonly address: Address;
     readonly connected: boolean;
 
     connect(): void;
