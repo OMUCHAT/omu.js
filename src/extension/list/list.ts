@@ -8,7 +8,7 @@ export interface List<T extends Keyable> {
     remove(...items: T[]): Promise<void>;
     clear(): Promise<void>;
 
-    on(listener: ListListener<T>): void;
+    addListener(listener: ListListener<T>): void;
     off(listener: ListListener<T>): void;
 
     iterator(): AsyncIterator<T>;

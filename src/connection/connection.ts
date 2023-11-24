@@ -18,13 +18,13 @@ export interface Connection extends ClientListener {
     send(event: EventJson): void;
     status(): ConnectionStatus;
 
-    on(listener: ConnectionListener): void;
-    off(listener: ConnectionListener): void;
+    addListener(listener: ConnectionListener): void;
+    removeListener(listener: ConnectionListener): void;
 }
 
 export interface ConnectionListener {
     onConnect?(): void;
     onDisconnect?(): void;
     onEvent?(event: EventJson): void;
-    onStatusChange?(status: ConnectionStatus): void;
+    onStatusChanged?(status: ConnectionStatus): void;
 }

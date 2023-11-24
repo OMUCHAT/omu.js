@@ -15,7 +15,7 @@ export class ServerExtension implements Extension {
     apps: List<App> | undefined;
 
     constructor(private readonly client: Client) {
-        client.on(this);
+        client.addListener(this);
     }
 
     onInitialized(): void {

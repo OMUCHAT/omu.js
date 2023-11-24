@@ -7,8 +7,8 @@ import { type EventData } from ".";
 
 export interface EventRegistry extends ConnectionListener {
     register(...event: EventType[]): void;
-    on<D, T>(event: EventType<D, T>, listener: (data: T) => void): void;
-    off<D, T>(event: EventType<D, T>, listener: (data: T) => void): void;
+    addListener<D, T>(event: EventType<D, T>, listener: (data: T) => void): void;
+    removeListener<D, T>(event: EventType<D, T>, listener: (data: T) => void): void;
 }
 
 export function createEventRegistry(): EventRegistry {
@@ -60,8 +60,8 @@ export function createEventRegistry(): EventRegistry {
 
     return {
         register,
-        on,
-        off,
+        addListener: on,
+        removeListener: off,
         onEvent,
     };
 }

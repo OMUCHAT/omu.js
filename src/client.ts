@@ -21,6 +21,6 @@ export interface Client {
     stop(): void;
     send<D, T>(event: EventType<D, T>, data: T): void;
 
-    on(listener: ClientListener): void;
-    off(listener: ClientListener): void;
+    addListener(listener: ClientListener): void;
+    removeListener(listener: ClientListener): void;
 }

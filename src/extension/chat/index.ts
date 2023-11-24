@@ -29,7 +29,7 @@ export class ChatExtension implements Extension, ClientListener {
     rooms: List<Room> | undefined;
 
     constructor(private readonly client: Client) {
-        client.on(this);
+        client.addListener(this);
     }
 
     onInitialized(): void {

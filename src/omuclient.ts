@@ -35,9 +35,9 @@ export class OmuClient implements Client, ConnectionListener {
             this.extensions.register(...extensions);
         }
 
-        connection.on(this);
-        connection.on(this.events);
-        this.on(connection);
+        connection.addListener(this);
+        connection.addListener(this.events);
+        this.addListener(connection);
 
         this.running = false;
         this.listeners.forEach((listener) => {
@@ -62,14 +62,14 @@ export class OmuClient implements Client, ConnectionListener {
         });
     }
 
-    on(listener: ClientListener): void {
+    addListener(listener: ClientListener): void {
         if (this.listeners.includes(listener)) {
             throw new Error("Listener already registered");
         }
         this.listeners.push(listener);
     }
 
-    off(listener: ClientListener): void {
+    removeListener(listener: ClientListener): void {
         this.listeners.splice(this.listeners.indexOf(listener), 1);
     }
 

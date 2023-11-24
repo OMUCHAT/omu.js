@@ -72,7 +72,7 @@ class ListImpl<T extends Keyable> implements List<T> {
         this.cache = new Map();
         this.listeners = [];
 
-        this.client.events.on(ListItemAddEvent, (event) => {
+        this.client.events.addListener(ListItemAddEvent, (event) => {
             if (event.type !== this.type.key) {
                 return;
             }
@@ -89,7 +89,7 @@ class ListImpl<T extends Keyable> implements List<T> {
                 listener.onCacheUpdate?.(this.cache);
             });
         });
-        this.client.events.on(ListItemRemoveEvent, (event) => {
+        this.client.events.addListener(ListItemRemoveEvent, (event) => {
             if (event.type !== this.type.key) {
                 return;
             }
@@ -102,7 +102,7 @@ class ListImpl<T extends Keyable> implements List<T> {
                 listener.onCacheUpdate?.(this.cache);
             });
         });
-        this.client.events.on(ListItemSetEvent, (event) => {
+        this.client.events.addListener(ListItemSetEvent, (event) => {
             if (event.type !== this.type.key) {
                 return;
             }
@@ -119,7 +119,7 @@ class ListImpl<T extends Keyable> implements List<T> {
                 listener.onCacheUpdate?.(this.cache);
             });
         });
-        this.client.events.on(ListItemClearEvent, (event) => {
+        this.client.events.addListener(ListItemClearEvent, (event) => {
             if (event.type !== this.type.key) {
                 return;
             }
@@ -131,7 +131,7 @@ class ListImpl<T extends Keyable> implements List<T> {
         });
     }
 
-    on(listener: ListListener<T>): void {
+    addListener(listener: ListListener<T>): void {
         if (this.listeners.includes(listener)) {
             throw new Error("Listener already registered");
         }

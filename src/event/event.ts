@@ -8,9 +8,3 @@ export interface EventType<D = any, T = any> {
     serialize(event: T): D;
     deserialize(data: D): T | null;
 }
-
-export interface Event<T = any> {
-    type: EventType<any, T>;
-    on(listener: (data: T) => void): void;
-    off(listener: (data: T) => void): void;
-}

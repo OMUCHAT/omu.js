@@ -14,6 +14,41 @@ export class WebsocketConnection implements Connection {
         this.socket = null;
     }
 
+    connect() {
+        if (this.socket && !this.connected) {
+            throw new Error("Already connecting");
+        }
+        this.disconnect();
+        this.socket = new WebSocket(this.wsEndpoint());
+        this.socket.onopen = () => {
+            this.connected = true;
+            this.listeners.forEach((listener) => {
+                listener.onConnect?.();
+                listener.onStatusChanged?.("connected");
+            });
+        };
+        this.socket.onclose = () => {
+            this.connected = false;
+            this.listeners.forEach((listener) => {
+                listener.onDisconnect?.();
+                listener.onStatusChanged?.("disconnected");
+            });
+        };
+        this.socket.onmessage = (event) => {
+            const message = JSON.parse(event.data);
+            this.listeners.forEach((listener) => {
+                listener.onEvent?.(message);
+            });
+        };
+    }
+
+    disconnect() {
+        if (this.socket) {
+            this.socket.close();
+            this.socket = null;
+        }
+    }
+
     send(event: EventJson): void {
         if (!this.connected || !this.socket) {
             throw new Error("Not connected");
@@ -37,41 +72,6 @@ export class WebsocketConnection implements Connection {
         return `${protocol}://${host}:${port}/api/v1/ws`;
     }
 
-    connect() {
-        if (this.socket && !this.connected) {
-            throw new Error("Already connecting");
-        }
-        this.disconnect();
-        this.socket = new WebSocket(this.wsEndpoint());
-        this.socket.onopen = () => {
-            this.connected = true;
-            this.listeners.forEach((listener) => {
-                listener.onConnect?.();
-                listener.onStatusChange?.("connected");
-            });
-        };
-        this.socket.onclose = () => {
-            this.connected = false;
-            this.listeners.forEach((listener) => {
-                listener.onDisconnect?.();
-                listener.onStatusChange?.("disconnected");
-            });
-        };
-        this.socket.onmessage = (event) => {
-            const message = JSON.parse(event.data);
-            this.listeners.forEach((listener) => {
-                listener.onEvent?.(message);
-            });
-        };
-    }
-
-    disconnect() {
-        if (this.socket) {
-            this.socket.close();
-            this.socket = null;
-        }
-    }
-
     onStarted(): void {
         this.connect();
     }
@@ -80,14 +80,14 @@ export class WebsocketConnection implements Connection {
         this.disconnect();
     }
 
-    on(listener: ConnectionListener): void {
+    addListener(listener: ConnectionListener): void {
         if (this.listeners.includes(listener)) {
             throw new Error("Listener already registered");
         }
         this.listeners.push(listener);
     }
 
-    off(listener: ConnectionListener): void {
+    removeListener(listener: ConnectionListener): void {
         this.listeners.splice(this.listeners.indexOf(listener), 1);
     }
 }
