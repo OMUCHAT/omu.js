@@ -5,7 +5,7 @@ export interface List<T extends Keyable> {
     get(key: string): Promise<T | null>;
     set(...item: T[]): Promise<void>;
     add(...item: T[]): Promise<void>;
-    remove(...key: string[]): Promise<void>;
+    remove(...items: T[]): Promise<void>;
     clear(): Promise<void>;
 
     on(listener: ListListener<T>): void;

@@ -11,8 +11,14 @@ export class HttpEndpoint implements Endpoint {
     }
 
     async call<D, T>(endpoint: EndpointType<D, T>, data: D): Promise<T> {
-        const response = await axios.post(this.getEndpoint(endpoint), endpoint.serialize(data));
-        return endpoint.deserialize(response.data);
+        const endpointUrl = this.getEndpoint(endpoint);
+        const postData = endpoint.serialize(data);
+        try {
+            const response = await axios.post(endpointUrl, postData);
+            return endpoint.deserialize(response.data);
+        } catch (e) {
+            throw new Error(`Failed to call endpoint ${endpoint.type}: ${e}`);
+        }
     }
 
     private getEndpoint(endpoint: EndpointType): string {

@@ -9,7 +9,7 @@ export * from "./list";
 type ListEvent = { type: string; }
 export const ListExtensionType: ExtensionType<ListExtension> = defineExtensionType("list", (client: Client) => new ListExtension(client));
 export const ListItemAddEvent = ListExtensionType.defineEventType<ListEvent & { items: any[] }>("list_item_add");
-export const ListItemRemoveEvent = ListExtensionType.defineEventType<ListEvent & { items: string[] }>("list_item_remove");
+export const ListItemRemoveEvent = ListExtensionType.defineEventType<ListEvent & { items: Record<string, any> }>("list_item_remove");
 export const ListItemSetEvent = ListExtensionType.defineEventType<ListEvent & { items: any[] }>("list_item_set");
 export const ListItemClearEvent = ListExtensionType.defineEventType<ListEvent>("list_item_clear");
 export const ListItemGetEndpoint = ListExtensionType.defineEndpointType<ListEvent & { items: string[] }, Record<string, any>>("list_item_get");
@@ -93,17 +93,12 @@ class ListImpl<T extends Keyable> implements List<T> {
             if (event.type !== this.type.key) {
                 return;
             }
-            const items = event.items;
-            items.forEach((key) => {
-                const item = this.cache.get(key);
-                if (!item) {
-                    throw new Error(`No item for key ${key}`);
-                }
+            const keys = Object.keys(event.items);
+            keys.forEach((key) => {
                 this.cache.delete(key);
-                return item;
             });
             this.listeners.forEach((listener) => {
-                listener.onItemRemove?.(items);
+                listener.onItemRemove?.(keys);
                 listener.onCacheUpdate?.(this.cache);
             });
         });
@@ -185,10 +180,12 @@ class ListImpl<T extends Keyable> implements List<T> {
         });
     }
 
-    async remove(...keys: string[]): Promise<void> {
+    async remove(...items: T[]): Promise<void> {
         this.client.send(ListItemRemoveEvent, {
             type: this.type.key,
-            items: keys,
+            items: Object.fromEntries(items.map((item) => {
+                return [item.key(), null];
+            })),
         });
     }
 

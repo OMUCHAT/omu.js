@@ -23,15 +23,19 @@ export class Channel implements Keyable, Model<ChannelJson> {
     icon_url: string;
     created_at: number;
 
-    constructor(json: ChannelJson) {
-        this.provider_id = json.provider_id;
-        this.id = json.id;
-        this.url = json.url;
-        this.name = json.name;
-        this.description = json.description;
-        this.active = json.active;
-        this.icon_url = json.icon_url;
-        this.created_at = json.created_at;
+    constructor(option: ChannelJson) {
+        this.provider_id = option.provider_id;
+        this.id = option.id;
+        this.url = option.url;
+        this.name = option.name;
+        this.description = option.description;
+        this.active = option.active;
+        this.icon_url = option.icon_url;
+        this.created_at = option.created_at;
+    }
+
+    fromJson(json: ChannelJson): Channel {
+        return new Channel(json);
     }
 
     key(): string {

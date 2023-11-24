@@ -5,8 +5,8 @@ import type { EventType } from "./event";
 
 export interface EventRegistry extends ConnectionListener {
     register(...event: EventType[]): void;
-    on<T>(event: EventType<T>, listener: (data: T) => void): void;
-    off<T>(event: EventType<T>, listener: (data: T) => void): void;
+    on<D, T>(event: EventType<D, T>, listener: (data: T) => void): void;
+    off<D, T>(event: EventType<D, T>, listener: (data: T) => void): void;
 }
 
 function defineEvent<D, T>(type: string, serializer: (event: T) => D, deserializer: (data: D) => T): EventType<D, T> {

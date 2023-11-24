@@ -31,7 +31,7 @@ class EventRegistryImpl implements EventRegistry {
         });
     }
 
-    on<T>(event: EventType<T>, listener: (data: T) => void): void {
+    on<D, T>(event: EventType<D, T>, listener: (data: T) => void): void {
         const eventInfo = this.eventMap[event.type];
         if (!eventInfo) {
             throw new Error(`No event for type ${event.type}`);
@@ -39,7 +39,7 @@ class EventRegistryImpl implements EventRegistry {
         eventInfo.listeners.push(listener);
     }
 
-    off<T>(event: EventType<T>, listener: (data: T) => void): void {
+    off<D, T>(event: EventType<D, T>, listener: (data: T) => void): void {
         const eventInfo = this.eventMap[event.type];
         if (!eventInfo) {
             throw new Error(`No event for type ${event.type}`);
@@ -141,7 +141,7 @@ export class OmuClient implements Client, ConnectionListener {
 
     onDisconnect(): void {
         if (this.running) {
-            // this.connection.connect();
+            this.connection.connect();
         }
     }
 

@@ -1,8 +1,7 @@
-import { Keyable } from "src/interface/keyable";
 import { Model } from "src/interface/model";
 
 export interface RoleJson {
-    id: string;
+    id?: string;
     name: string;
     color: string;
     icon_url: string;
@@ -10,8 +9,8 @@ export interface RoleJson {
     is_moderator: boolean;
 }
 
-export class Role implements Keyable, Model<RoleJson> {
-    id: string;
+export class Role implements Model<RoleJson> {
+    id?: string;
     name: string;
     color: string;
     icon_url: string;
@@ -25,10 +24,6 @@ export class Role implements Keyable, Model<RoleJson> {
         this.icon_url = info.icon_url;
         this.is_owner = info.is_owner;
         this.is_moderator = info.is_moderator;
-    }
-
-    key(): string {
-        return this.id;
     }
 
     json(): RoleJson {
