@@ -1,4 +1,4 @@
-import { type Client } from "../../client";
+import { type Client } from "../../client/client";
 import { type Keyable, type Model } from "../../interface";
 import { defineExtensionType, type Extension, type ExtensionType } from "../extension";
 

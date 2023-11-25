@@ -1,4 +1,4 @@
-import { ClientListener } from "../client";
+import { ClientListener } from "../client/client";
 import type { EventJson } from "../event/event";
 
 export interface Address {

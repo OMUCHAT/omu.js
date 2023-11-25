@@ -1,8 +1,8 @@
-import type { Connection } from "./connection/connection";
-import { Endpoint } from "./endpoint/endpoint";
-import { EventType } from "./event/event";
-import type { EventRegistry } from "./event/event-registry";
-import { ExtensionRegistry } from "./extension/extension-registry";
+import type { Connection } from "../connection/connection";
+import { Endpoint } from "../endpoint/endpoint";
+import { EventType } from "../event/event";
+import type { EventRegistry } from "../event/event-registry";
+import { ExtensionRegistry } from "../extension/extension-registry";
 
 export interface ClientListener {
     onInitialized?(): void;

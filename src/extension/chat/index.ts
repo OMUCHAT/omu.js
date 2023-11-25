@@ -1,4 +1,4 @@
-import { Client, ClientListener } from "../../client";
+import { Client, ClientListener } from "../../client/client";
 import { defineExtensionType, type Extension, type ExtensionType } from "../extension";
 import { ListExtensionType, defineListTypeModel, type List, type ListExtension } from "../list";
 

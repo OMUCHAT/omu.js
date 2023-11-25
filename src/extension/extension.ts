@@ -1,4 +1,4 @@
-import { type Client } from "src/client";
+import { type Client } from "src/client/client";
 import { type EndpointType } from "src/endpoint";
 import { type EventType } from "src/event";
 
@@ -7,7 +7,7 @@ export interface Extension {
 
 export interface ExtensionType<T extends Extension = Extension> {
     key: string;
-    factory: (client: Client) => T;
+    create: (client: Client) => T;
     defineEventTypeSerialize<D, T = D>(type: string, serialize: (event: T) => D, deserialize: (data: D) => T): EventType<D, T>;
     defineEventType<T>(type: string): EventType<T, T>;
     defineEndpointSerialize<Req, Res = Req, ReqData = any, ResData = any>(type: string, serialize: (data: Req) => ReqData, deserialize: (data: ResData) => Res): EndpointType<Req, Res, ReqData, ResData>;
@@ -15,10 +15,10 @@ export interface ExtensionType<T extends Extension = Extension> {
     dependencies: () => ExtensionType[];
 }
 
-export function defineExtensionType<T extends Extension>(key: string, factory: (client: Client) => T, dependencies?: () => ExtensionType[]): ExtensionType<T> {
+export function defineExtensionType<T extends Extension>(key: string, create: (client: Client) => T, dependencies?: () => ExtensionType[]): ExtensionType<T> {
     return {
         key,
-        factory,
+        create,
         defineEventTypeSerialize<D, T = D>(type: string, serialize: (event: T) => D, deserialize: (data: D) => T): EventType<D, T> {
             return {
                 type: `${key}:${type}`,

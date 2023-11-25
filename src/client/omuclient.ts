@@ -1,9 +1,10 @@
+import { type Connection, type ConnectionListener } from "../connection";
+import { HttpEndpoint, type Endpoint } from "../endpoint";
+import { EVENTS, type EventRegistry, type EventType } from "../event";
+import { createEventRegistry } from "../event/event-registry";
+import { ChatExtensionType, ListExtensionType, ServerExtensionType, createExtensionRegistry, type App, type Extension, type ExtensionRegistry, type ExtensionType } from "../extension";
+
 import { type Client, type ClientListener } from "./client";
-import { type Connection, type ConnectionListener } from "./connection";
-import { HttpEndpoint, type Endpoint } from "./endpoint";
-import { EVENTS, type EventRegistry, type EventType } from "./event";
-import { createEventRegistry } from "./event/event-registry";
-import { ChatExtensionType, ListExtensionType, ServerExtensionType, createExtensionRegistry, type App, type Extension, type ExtensionRegistry, type ExtensionType } from "./extension";
 
 export class OmuClient implements Client, ConnectionListener {
     readonly app: App;
@@ -29,6 +30,7 @@ export class OmuClient implements Client, ConnectionListener {
 
         this.listeners = [];
         this.events = eventsRegistry ?? createEventRegistry();
+        this.events.register(EVENTS.Ready);
         this.extensions = extensionRegistry ?? createExtensionRegistry(this);
         this.extensions.register(ListExtensionType, ServerExtensionType, ChatExtensionType);
         if (extensions) {

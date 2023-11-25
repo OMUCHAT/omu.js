@@ -1,4 +1,4 @@
-import { Client } from "../client";
+import { Client } from "../client/client";
 import { ConnectionListener } from "../connection/connection";
 
 import { Extension, ExtensionType } from "./extension";
@@ -22,7 +22,7 @@ export function createExtensionRegistry(client: Client): ExtensionRegistry {
                     throw new Error(`Extension type ${type.key} depends on ${dependency.key} which is not registered`);
                 }
             });
-            extensionMap[type.key] = type.factory(client);
+            extensionMap[type.key] = type.create(client);
         });
     }
 
