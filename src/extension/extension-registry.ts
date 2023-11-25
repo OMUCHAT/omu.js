@@ -1,5 +1,5 @@
-import { Client } from "../client/client";
-import { ConnectionListener } from "../connection/connection";
+import { Client } from "../client";
+import { ConnectionListener } from "../connection";
 
 import { Extension, ExtensionType } from "./extension";
 

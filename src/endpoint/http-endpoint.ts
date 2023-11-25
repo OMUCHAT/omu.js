@@ -1,5 +1,6 @@
 import axios from "axios";
-import { Address } from "src/connection/connection";
+
+import { Address } from "../connection";
 
 import { Endpoint, EndpointType } from "./endpoint";
 
@@ -12,10 +13,10 @@ export class HttpEndpoint implements Endpoint {
 
     async call<D, T>(endpoint: EndpointType<D, T>, data: D): Promise<T> {
         const endpointUrl = this.getEndpoint(endpoint);
-        const postData = endpoint.serialize(data);
+        const postData = endpoint.serializer.serialize(data);
         try {
             const response = await axios.post(endpointUrl, postData);
-            return endpoint.deserialize(response.data);
+            return endpoint.serializer.deserialize(response.data);
         } catch (e) {
             throw new Error(`Failed to call endpoint ${endpoint.type}: ${e}`);
         }

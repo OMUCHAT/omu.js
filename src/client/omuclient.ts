@@ -1,7 +1,6 @@
 import { type Connection, type ConnectionListener } from "../connection";
 import { HttpEndpoint, type Endpoint } from "../endpoint";
-import { EVENTS, type EventRegistry, type EventType } from "../event";
-import { createEventRegistry } from "../event/event-registry";
+import { EVENTS, createEventRegistry, type EventRegistry, type EventType } from "../event";
 import { ChatExtensionType, ListExtensionType, ServerExtensionType, createExtensionRegistry, type App, type Extension, type ExtensionRegistry, type ExtensionType } from "../extension";
 
 import { type Client, type ClientListener } from "./client";
@@ -57,10 +56,10 @@ export class OmuClient implements Client, ConnectionListener {
         }
     }
 
-    send<D, T>(event: EventType<D, T>, data: T): void {
+    send<T, D>(event: EventType<T, D>, data: T): void {
         this.connection.send({
             type: event.type,
-            data: event.serialize(data),
+            data: event.serializer.serialize(data),
         });
     }
 

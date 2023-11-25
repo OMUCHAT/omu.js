@@ -1,9 +1,10 @@
-import type { ConnectionListener } from "../connection/connection";
-import { App, AppJson } from "../extension/server/model/app";
+import type { ConnectionListener } from "../connection";
+import { App, AppJson } from "../extension";
+import { Serializer } from "../interface";
+import { makeSerializer } from "../interface/serializer";
 
-import type { EventType } from "./event";
+import type { EventJson, EventType } from "./event";
 
-import { type EventData } from ".";
 
 export interface EventRegistry extends ConnectionListener {
     register(...event: EventType[]): void;
@@ -45,14 +46,14 @@ export function createEventRegistry(): EventRegistry {
         eventInfo.listeners.splice(eventInfo.listeners.indexOf(listener), 1);
     }
 
-    function onEvent(eventData: EventData<any>): void {
+    function onEvent(eventData: EventJson<any>): void {
         const event = eventMap[eventData.type];
         if (!event) {
             console.warn(`No event for type ${eventData.type}`);
             console.debug(eventMap);
             return;
         }
-        const data = event.event.deserialize(eventData.data);
+        const data = event.event.serializer.deserialize(eventData.data);
         event.listeners.forEach((listener) => {
             listener(data);
         });
@@ -66,17 +67,23 @@ export function createEventRegistry(): EventRegistry {
     };
 }
 
-function defineEvent<D, T>(type: string, serializer: (event: T) => D, deserializer: (data: D) => T): EventType<D, T> {
+function defineEvent<T, D>(type: string, serializer: Serializer<T, D>): EventType<T, D> {
     return {
         type,
-        serialize: serializer,
-        deserialize: deserializer,
+        serializer,
     };
 }
 
 export const EVENTS = {
-    Connect: defineEvent<{ app: AppJson }, App>("Connect", (event) => {
-        return { app: event }
-    }, (data) => new App(data.app)),
-    Ready: defineEvent<undefined, undefined>("Ready", () => undefined, () => undefined),
+    Connect: defineEvent<App, { app: AppJson }>("Connect", makeSerializer({
+        serialize(item) {
+            return {
+                app: item.json(),
+            };
+        },
+        deserialize(data) {
+            return new App(data.app);
+        },
+    })),
+    Ready: defineEvent<undefined, undefined>("Ready", makeSerializer({})),
 }

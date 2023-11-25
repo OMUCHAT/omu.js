@@ -1,10 +1,11 @@
+import { Serializer } from "../interface";
+
 export interface EventJson<T = any> {
     readonly type: string;
     readonly data: T;
 }
 
-export interface EventType<D = any, T = any> {
+export interface EventType<T = any, D = any> {
     readonly type: string;
-    serialize(event: T): D;
-    deserialize(data: D): T | null;
+    serializer: Serializer<T, D>;
 }

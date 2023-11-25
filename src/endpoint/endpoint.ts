@@ -1,9 +1,10 @@
-import { Address } from "../connection/connection";
+import { Address } from "../connection";
+import type { Serializer } from "../interface";
+
 
 export interface EndpointType<ReqType = any, ResType = any, ReqData = any, ResData = any> {
     type: string;
-    serialize(data: ReqType): ReqData;
-    deserialize(data: ResData): ResType;
+    serializer: Serializer<ReqType, ReqData, ResType, ResData>;
 }
 
 

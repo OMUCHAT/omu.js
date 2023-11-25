@@ -1,8 +1,8 @@
-import type { Connection } from "../connection/connection";
-import { Endpoint } from "../endpoint/endpoint";
-import { EventType } from "../event/event";
-import type { EventRegistry } from "../event/event-registry";
-import { ExtensionRegistry } from "../extension/extension-registry";
+import type { Connection } from "../connection";
+import { Endpoint } from "../endpoint";
+import type { EventRegistry } from "../event";
+import { EventType } from "../event";
+import { ExtensionRegistry } from "../extension";
 
 export interface ClientListener {
     onInitialized?(): void;
@@ -19,7 +19,7 @@ export interface Client {
 
     start(): void;
     stop(): void;
-    send<D, T>(event: EventType<D, T>, data: T): void;
+    send<T, D>(event: EventType<T, D>, data: T): void;
 
     addListener(listener: ClientListener): void;
     removeListener(listener: ClientListener): void;

@@ -1,5 +1,6 @@
-import { type Client } from "../../client/client";
+import { type Client } from "../../client";
 import { type Keyable, type Model } from "../../interface";
+import { makeSerializer } from "../../interface/serializer";
 import { defineExtensionType, type Extension, type ExtensionType } from "../extension";
 
 import { type List, type ListListener, type ListType } from "./list";
@@ -8,13 +9,13 @@ export * from "./list";
 
 type ListEvent = { type: string; }
 export const ListExtensionType: ExtensionType<ListExtension> = defineExtensionType("list", (client: Client) => new ListExtension(client));
-export const ListItemAddEvent = ListExtensionType.defineEventType<ListEvent & { items: any[] }>("list_item_add");
-export const ListItemRemoveEvent = ListExtensionType.defineEventType<ListEvent & { items: Record<string, any> }>("list_item_remove");
-export const ListItemSetEvent = ListExtensionType.defineEventType<ListEvent & { items: any[] }>("list_item_set");
-export const ListItemClearEvent = ListExtensionType.defineEventType<ListEvent>("list_item_clear");
-export const ListItemGetEndpoint = ListExtensionType.defineEndpointType<ListEvent & { items: string[] }, Record<string, any>>("list_item_get");
-export const ListItemFetchEndpoint = ListExtensionType.defineEndpointType<ListEvent & { limit: number, cursor?: string }, Record<string, any>>("list_item_fetch");
-export const ListItemSizeEndpoint = ListExtensionType.defineEndpointType<ListEvent, number>("list_item_size");
+export const ListItemAddEvent = ListExtensionType.defineEventType<ListEvent & { items: any[] }>("list_item_add", makeSerializer({}));
+export const ListItemRemoveEvent = ListExtensionType.defineEventType<ListEvent & { items: Record<string, any> }>("list_item_remove", makeSerializer({}));
+export const ListItemSetEvent = ListExtensionType.defineEventType<ListEvent & { items: any[] }>("list_item_set", makeSerializer({}));
+export const ListItemClearEvent = ListExtensionType.defineEventType<ListEvent>("list_item_clear", makeSerializer({}));
+export const ListItemGetEndpoint = ListExtensionType.defineEndpointType<ListEvent & { items: string[] }, Record<string, any>>("list_item_get", makeSerializer({}));
+export const ListItemFetchEndpoint = ListExtensionType.defineEndpointType<ListEvent & { limit: number, cursor?: string }, Record<string, any>>("list_item_fetch", makeSerializer({}));
+export const ListItemSizeEndpoint = ListExtensionType.defineEndpointType<ListEvent, number>("list_item_size", makeSerializer({}));
 
 
 export function defineListType<T extends Keyable, D = any>(extensionType: ExtensionType, key: string, serialize: (item: T) => D, deserialize: (data: D) => T | null): ListType<T, D> {

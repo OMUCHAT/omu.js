@@ -1,7 +1,6 @@
-import { type Client } from "../../client/client";
+import { type Client } from "../../client";
 import { defineExtensionType, type Extension, type ExtensionType } from "../extension";
-import { defineListTypeModel, ListExtensionType } from "../list";
-import { type List } from "../list/list";
+import { defineListTypeModel, ListExtensionType, type List } from "../list";
 
 import { App, type AppJson } from "./model";
 export * from "./model";

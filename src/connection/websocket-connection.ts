@@ -1,4 +1,4 @@
-import type { EventJson } from "../event/event";
+import type { EventJson } from "../event";
 
 import type { Address, Connection, ConnectionListener, ConnectionStatus } from "./connection";
 

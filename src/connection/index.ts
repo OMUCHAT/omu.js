@@ -1,3 +1,3 @@
-export type { Connection, ConnectionListener, ConnectionStatus, Address as ServerAddress } from "./connection";
+export type { Address, Connection, ConnectionListener, ConnectionStatus } from "./connection";
 export { WebsocketConnection } from "./websocket-connection";
 
