@@ -1,3 +1,5 @@
+import { Client } from "src/client";
+
 import type { ConnectionListener } from "../connection";
 import { App, AppJson } from "../extension";
 import { Serializer } from "../interface";
@@ -7,64 +9,65 @@ import type { EventJson, EventType } from "./event";
 
 
 export interface EventRegistry extends ConnectionListener {
-    register(...event: EventType[]): void;
-    addListener<D, T>(event: EventType<D, T>, listener: (data: T) => void): void;
-    removeListener<D, T>(event: EventType<D, T>, listener: (data: T) => void): void;
+    register(...types: EventType[]): void;
+    addListener<T, D>(eventType: EventType<T, D>, listener: (data: T) => void): void;
+    removeListener<T, D>(eventType: EventType<T, D>, listener: (data: T) => void): void;
 }
 
-export function createEventRegistry(): EventRegistry {
+export function createEventRegistry(client: Client): EventRegistry {
     const eventMap: Record<string, {
-        event: EventType<any, any>;
+        type: EventType<any, any>;
         listeners: ((data: any) => void)[];
     }> = {};
 
-    function register(...event: EventType<any, any>[]): void {
-        event.forEach((event) => {
-            if (eventMap[event.type]) {
-                throw new Error(`Event type ${event.type} already registered`);
+    function register(...types: EventType<any, any>[]): void {
+        types.forEach((type) => {
+            if (eventMap[type.type]) {
+                throw new Error(`Event type ${type.type} already registered`);
             }
-            eventMap[event.type] = {
-                event,
+            eventMap[type.type] = {
+                type: type,
                 listeners: [],
             };
         });
     }
 
-    function on<D, T>(event: EventType<D, T>, listener: (data: T) => void): void {
-        const eventInfo = eventMap[event.type];
+    function addListener<T, D>(eventType: EventType<T, D>, listener: (data: T) => void): void {
+        const eventInfo = eventMap[eventType.type];
         if (!eventInfo) {
-            throw new Error(`No event for type ${event.type}`);
+            throw new Error(`No event for type ${eventType.type}`);
         }
         eventInfo.listeners.push(listener);
     }
 
-    function off<D, T>(event: EventType<D, T>, listener: (data: T) => void): void {
-        const eventInfo = eventMap[event.type];
+    function removeListener<T, D>(eventType: EventType<T, D>, listener: (data: T) => void): void {
+        const eventInfo = eventMap[eventType.type];
         if (!eventInfo) {
-            throw new Error(`No event for type ${event.type}`);
+            throw new Error(`No event for type ${eventType.type}`);
         }
         eventInfo.listeners.splice(eventInfo.listeners.indexOf(listener), 1);
     }
 
-    function onEvent(eventData: EventJson<any>): void {
-        const event = eventMap[eventData.type];
+    function onEvent(eventJson: EventJson<any>): void {
+        const event = eventMap[eventJson.type];
         if (!event) {
-            console.warn(`No event for type ${eventData.type}`);
-            console.debug(eventMap);
+            console.warn(`Received unknown event type ${eventJson.type}`);
             return;
         }
-        const data = event.event.serializer.deserialize(eventData.data);
+        const data = event.type.serializer.deserialize(eventJson.data);
         event.listeners.forEach((listener) => {
             listener(data);
         });
     }
 
-    return {
+    const registry = {
         register,
-        addListener: on,
-        removeListener: off,
+        addListener,
+        removeListener,
         onEvent,
     };
+    client.connection.addListener(registry);
+    return registry;
 }
 
 function defineEvent<T, D>(type: string, serializer: Serializer<T, D>): EventType<T, D> {
@@ -82,7 +85,7 @@ export const EVENTS = {
             };
         },
         deserialize(data) {
-            return new App(data.app);
+            return App.fromJson(data.app);
         },
     })),
     Ready: defineEvent<undefined, undefined>("Ready", makeSerializer({})),

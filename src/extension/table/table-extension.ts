@@ -1,84 +1,67 @@
-import { type Client } from "../../client";
-import { type Keyable, type Model } from "../../interface";
+import { Client } from "src/client";
+import { Keyable } from "src/interface";
+
 import { makeSerializer } from "../../interface/serializer";
-import { defineExtensionType, type Extension, type ExtensionType } from "../extension";
-
-import { type List, type ListListener, type ListType } from "./list";
-export * from "./list";
+import { Extension, ExtensionType, defineExtensionType } from "../extension";
 
 
-type ListEvent = { type: string; }
-export const ListExtensionType: ExtensionType<ListExtension> = defineExtensionType("list", (client: Client) => new ListExtension(client));
-export const ListItemAddEvent = ListExtensionType.defineEventType<ListEvent & { items: any[] }>("list_item_add", makeSerializer({}));
-export const ListItemRemoveEvent = ListExtensionType.defineEventType<ListEvent & { items: Record<string, any> }>("list_item_remove", makeSerializer({}));
-export const ListItemSetEvent = ListExtensionType.defineEventType<ListEvent & { items: any[] }>("list_item_set", makeSerializer({}));
-export const ListItemClearEvent = ListExtensionType.defineEventType<ListEvent>("list_item_clear", makeSerializer({}));
-export const ListItemGetEndpoint = ListExtensionType.defineEndpointType<ListEvent & { items: string[] }, Record<string, any>>("list_item_get", makeSerializer({}));
-export const ListItemFetchEndpoint = ListExtensionType.defineEndpointType<ListEvent & { limit: number, cursor?: string }, Record<string, any>>("list_item_fetch", makeSerializer({}));
-export const ListItemSizeEndpoint = ListExtensionType.defineEndpointType<ListEvent, number>("list_item_size", makeSerializer({}));
+import { Table, TableListener, TableType } from "./table";
+
+export const TableExtensionType: ExtensionType<TableExtension> = defineExtensionType("table", (client: Client) => new TableExtension(client));
+type TableEvent = { type: string; }
+export const TableItemAddEvent = TableExtensionType.defineEventType<TableEvent & { items: any[] }>("item_add", makeSerializer({}));
+export const TableItemRemoveEvent = TableExtensionType.defineEventType<TableEvent & { items: Record<string, any> }>("item_remove", makeSerializer({}));
+export const TableItemSetEvent = TableExtensionType.defineEventType<TableEvent & { items: any[] }>("item_set", makeSerializer({}));
+export const TableItemClearEvent = TableExtensionType.defineEventType<TableEvent>("item_clear", makeSerializer({}));
+export const TableItemGetEndpoint = TableExtensionType.defineEndpointType<TableEvent & { items: string[] }, Record<string, any>>("item_get", makeSerializer({}));
+export const TableItemFetchEndpoint = TableExtensionType.defineEndpointType<TableEvent & { limit: number, cursor?: string }, Record<string, any>>("item_fetch", makeSerializer({}));
+export const TableItemSizeEndpoint = TableExtensionType.defineEndpointType<TableEvent, number>("item_size", makeSerializer({}));
 
 
-export function defineListType<T extends Keyable, D = any>(extensionType: ExtensionType, key: string, serialize: (item: T) => D, deserialize: (data: D) => T | null): ListType<T, D> {
-    return {
-        key: `${extensionType.key}:${key}`,
-        serialize,
-        deserialize,
-    };
-}
-
-export function defineListTypeModel<T extends Model<D> & Keyable, D>(extensionType: ExtensionType, key: string, deserialize: (data: D) => T): ListType<T, D> {
-    return {
-        key: `${extensionType.key}:${key}`,
-        serialize: (item) => item.json(),
-        deserialize,
-    };
-}
-
-
-export class ListExtension implements Extension {
-    private readonly listMap: Record<string, List<Keyable>>;
+export class TableExtension implements Extension {
+    private readonly tableMap: Record<string, Table<Keyable>>;
 
     constructor(private readonly client: Client) {
-        this.listMap = {};
-        client.events.register(ListItemAddEvent, ListItemRemoveEvent, ListItemSetEvent, ListItemClearEvent);
+        this.tableMap = {};
+        client.events.register(TableItemAddEvent, TableItemRemoveEvent, TableItemSetEvent, TableItemClearEvent);
     }
 
-    register<K extends Keyable>(type: ListType<K>): List<K> {
-        if (this.listMap[type.key]) {
-            throw new Error(`List for key ${type.key} already registered`);
+    register<K extends Keyable>(type: TableType<K>): Table<K> {
+        if (this.tableMap[type.key]) {
+            throw new Error(`Table for key ${type.key} already registered`);
         }
-        const list = new ListImpl<K>(this.client, type);
-        this.listMap[type.key] = list;
-        return list;
+        const table = new TableImpl<K>(this.client, type);
+        this.tableMap[type.key] = table;
+        return table;
     }
 
-    get<K extends Keyable>(key: ListType<K>): List<K> {
-        const list = this.listMap[key.key];
-        if (!list) {
-            throw new Error(`No list for key ${key.key}`);
+    get<K extends Keyable>(key: TableType<K>): Table<K> {
+        const table = this.tableMap[key.key];
+        if (!table) {
+            throw new Error(`No table for key ${key.key}`);
         }
-        return list as List<K>;
+        return table as Table<K>;
     }
 }
 
 
-class ListImpl<T extends Keyable> implements List<T> {
+class TableImpl<T extends Keyable> implements Table<T> {
     public cache: Map<string, T>;
-    private readonly listeners: ListListener<T>[];
+    private readonly listeners: TableListener<T>[];
 
     constructor(
         private readonly client: Client,
-        private readonly type: ListType<T>,
+        private readonly type: TableType<T>,
     ) {
         this.cache = new Map();
         this.listeners = [];
 
-        this.client.events.addListener(ListItemAddEvent, (event) => {
+        this.client.events.addListener(TableItemAddEvent, (event) => {
             if (event.type !== this.type.key) {
                 return;
             }
             const items = new Map(Object.entries(event.items).map(([key, data]) => {
-                const item = this.type.deserialize(data);
+                const item = this.type.serializer.deserialize(data);
                 if (!item) {
                     throw new Error(`Failed to deserialize item ${key}`);
                 }
@@ -86,11 +69,11 @@ class ListImpl<T extends Keyable> implements List<T> {
             }));
             this.cache = new Map([...this.cache, ...items]);
             this.listeners.forEach((listener) => {
-                listener.onItemAdd?.(items);
+                listener.onAdd?.(items);
                 listener.onCacheUpdate?.(this.cache);
             });
         });
-        this.client.events.addListener(ListItemRemoveEvent, (event) => {
+        this.client.events.addListener(TableItemRemoveEvent, (event) => {
             if (event.type !== this.type.key) {
                 return;
             }
@@ -99,16 +82,16 @@ class ListImpl<T extends Keyable> implements List<T> {
                 this.cache.delete(key);
             });
             this.listeners.forEach((listener) => {
-                listener.onItemRemove?.(keys);
+                listener.onRemove?.(keys);
                 listener.onCacheUpdate?.(this.cache);
             });
         });
-        this.client.events.addListener(ListItemSetEvent, (event) => {
+        this.client.events.addListener(TableItemSetEvent, (event) => {
             if (event.type !== this.type.key) {
                 return;
             }
             const items = new Map(Object.entries(event.items).map(([key, data]) => {
-                const item = this.type.deserialize(data);
+                const item = this.type.serializer.deserialize(data);
                 if (!item) {
                     throw new Error(`Failed to deserialize item ${key}`);
                 }
@@ -116,30 +99,30 @@ class ListImpl<T extends Keyable> implements List<T> {
             }));
             this.cache = new Map([...this.cache, ...items]);
             this.listeners.forEach((listener) => {
-                listener.onItemSet?.(items);
+                listener.onSet?.(items);
                 listener.onCacheUpdate?.(this.cache);
             });
         });
-        this.client.events.addListener(ListItemClearEvent, (event) => {
+        this.client.events.addListener(TableItemClearEvent, (event) => {
             if (event.type !== this.type.key) {
                 return;
             }
             this.cache = new Map();
             this.listeners.forEach((listener) => {
-                listener.onItemClear?.();
+                listener.onClear?.();
                 listener.onCacheUpdate?.(this.cache);
             });
         });
     }
 
-    addListener(listener: ListListener<T>): void {
+    addListener(listener: TableListener<T>): void {
         if (this.listeners.includes(listener)) {
             throw new Error("Listener already registered");
         }
         this.listeners.push(listener);
     }
 
-    off(listener: ListListener<T>): void {
+    removeListener(listener: TableListener<T>): void {
         this.listeners.splice(this.listeners.indexOf(listener), 1);
     }
 
@@ -147,12 +130,12 @@ class ListImpl<T extends Keyable> implements List<T> {
         if (this.cache.has(key)) {
             return this.cache.get(key) ?? null;
         }
-        const res = await this.client.endpoint.call(ListItemGetEndpoint, {
+        const res = await this.client.endpoint.call(TableItemGetEndpoint, {
             type: this.type.key,
             items: [key],
         });
         Object.entries(res).forEach(([key, data]) => {
-            const item = this.type.deserialize(data);
+            const item = this.type.serializer.deserialize(data);
             if (!item) {
                 throw new Error(`Failed to deserialize item ${key}`);
             }
@@ -161,28 +144,28 @@ class ListImpl<T extends Keyable> implements List<T> {
         return this.cache.get(key) ?? null;
     }
 
-    async set(...items: T[]): Promise<void> {
+    async add(...items: T[]): Promise<void> {
         const data = Object.fromEntries(items.map((item) => {
-            return [item.key(), this.type.serialize(item)];
+            return [item.key(), this.type.serializer.serialize(item)];
         }));
-        this.client.send(ListItemSetEvent, {
+        this.client.send(TableItemAddEvent, {
             type: this.type.key,
             items: data,
         });
     }
 
-    async add(...items: T[]): Promise<void> {
+    async set(...items: T[]): Promise<void> {
         const data = Object.fromEntries(items.map((item) => {
-            return [item.key(), this.type.serialize(item)];
+            return [item.key(), this.type.serializer.serialize(item)];
         }));
-        this.client.send(ListItemAddEvent, {
+        this.client.send(TableItemSetEvent, {
             type: this.type.key,
             items: data,
         });
     }
 
     async remove(...items: T[]): Promise<void> {
-        this.client.send(ListItemRemoveEvent, {
+        this.client.send(TableItemRemoveEvent, {
             type: this.type.key,
             items: Object.fromEntries(items.map((item) => {
                 return [item.key(), null];
@@ -191,19 +174,19 @@ class ListImpl<T extends Keyable> implements List<T> {
     }
 
     async clear(): Promise<void> {
-        this.client.send(ListItemClearEvent, {
+        this.client.send(TableItemClearEvent, {
             type: this.type.key,
         });
     }
 
     async fetch(limit: number, cursor?: string): Promise<Map<string, T>> {
-        const res = await this.client.endpoint.call(ListItemFetchEndpoint, {
+        const res = await this.client.endpoint.call(TableItemFetchEndpoint, {
             type: this.type.key,
             cursor,
             limit,
         })
         const items = new Map(Object.entries(res).map(([key, data]) => {
-            const item = this.type.deserialize(data);
+            const item = this.type.serializer.deserialize(data);
             if (!item) {
                 throw new Error(`Failed to deserialize item ${key}`);
             }
@@ -229,7 +212,7 @@ class ListImpl<T extends Keyable> implements List<T> {
     }
 
     async size(): Promise<number> {
-        return await this.client.endpoint.call(ListItemSizeEndpoint, {
+        return await this.client.endpoint.call(TableItemSizeEndpoint, {
             type: this.type.key,
         });
     }

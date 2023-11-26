@@ -1,15 +1,15 @@
 import { type Connection, type ConnectionListener } from "../connection";
 import { HttpEndpoint, type Endpoint } from "../endpoint";
 import { EVENTS, createEventRegistry, type EventRegistry, type EventType } from "../event";
-import { ChatExtensionType, ListExtensionType, ServerExtensionType, createExtensionRegistry, type App, type Extension, type ExtensionRegistry, type ExtensionType } from "../extension";
+import { ChatExtensionType, ServerExtensionType, TableExtensionType, createExtensionRegistry, type App, type Extension, type ExtensionRegistry, type ExtensionType } from "../extension";
 
 import { type Client, type ClientListener } from "./client";
 
 export class OmuClient implements Client, ConnectionListener {
     readonly app: App;
     readonly connection: Connection;
-    readonly endpoint: Endpoint;
     readonly events: EventRegistry;
+    readonly endpoint: Endpoint;
     readonly extensions: ExtensionRegistry;
     readonly listeners: ClientListener[];
     public running: boolean;
@@ -23,24 +23,23 @@ export class OmuClient implements Client, ConnectionListener {
         extensions?: ExtensionType<Extension>[];
     }) {
         const { app, connection, endpoint, eventsRegistry, extensionRegistry, extensions } = options;
+        this.running = false;
+        this.listeners = [];
         this.app = app;
         this.connection = connection;
+        this.events = eventsRegistry ?? createEventRegistry(this);
         this.endpoint = endpoint ?? new HttpEndpoint(connection.address);
-
-        this.listeners = [];
-        this.events = eventsRegistry ?? createEventRegistry();
-        this.events.register(EVENTS.Ready);
         this.extensions = extensionRegistry ?? createExtensionRegistry(this);
-        this.extensions.register(ListExtensionType, ServerExtensionType, ChatExtensionType);
+
+        this.events.register(EVENTS.Ready);
+        this.extensions.register(TableExtensionType, ServerExtensionType, ChatExtensionType);
         if (extensions) {
             this.extensions.register(...extensions);
         }
 
         connection.addListener(this);
-        connection.addListener(this.events);
         this.addListener(connection);
 
-        this.running = false;
         this.listeners.forEach((listener) => {
             listener.onInitialized?.();
         });

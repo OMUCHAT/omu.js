@@ -34,6 +34,10 @@ export class App implements Keyable, Model<AppJson> {
         this.image_url = info.image_url;
     }
 
+    static fromJson(info: AppJson): App {
+        return new App(info);
+    }
+
     key(): string {
         return `${this.group}/${this.name}`;
     }

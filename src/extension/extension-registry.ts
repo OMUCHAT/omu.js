@@ -1,19 +1,18 @@
 import { Client } from "../client";
-import { ConnectionListener } from "../connection";
 
 import { Extension, ExtensionType } from "./extension";
 
-export interface ExtensionRegistry extends ConnectionListener {
-    register(...extensionType: ExtensionType[]): void;
+export interface ExtensionRegistry {
+    register(...types: ExtensionType[]): void;
     get<T extends Extension>(type: ExtensionType<T>): T;
     has<T extends Extension>(type: ExtensionType<T>): boolean;
 }
 
 export function createExtensionRegistry(client: Client): ExtensionRegistry {
-    const extensionMap: Record<string, Extension> = {};
+    const extensionMap: Map<string, Extension> = new Map();
 
-    function register(...extensionType: ExtensionType<Extension>[]): void {
-        extensionType.forEach((type) => {
+    function register(...types: ExtensionType<Extension>[]): void {
+        types.forEach((type) => {
             if (has(type)) {
                 throw new Error(`Extension type ${type.key} already registered`);
             }
@@ -22,20 +21,20 @@ export function createExtensionRegistry(client: Client): ExtensionRegistry {
                     throw new Error(`Extension type ${type.key} depends on ${dependency.key} which is not registered`);
                 }
             });
-            extensionMap[type.key] = type.create(client);
+            extensionMap.set(type.key, type.create(client));
         });
     }
 
-    function has<T extends Extension>(extensionType: ExtensionType<T>): boolean {
-        return !!extensionMap[extensionType.key];
+    function get<Ext extends Extension>(extensionType: ExtensionType<Ext>): Ext {
+        const extension = extensionMap.get(extensionType.key);
+        if (!extension) {
+            throw new Error(`Extension type ${extensionType.key} not registered`);
+        }
+        return extension as Ext;
     }
 
-    function get<T extends Extension>(extensionType: ExtensionType<T>): T {
-        const extension = extensionMap[extensionType.key];
-        if (!extension) {
-            throw new Error(`No extension for type ${extensionType.key}`);
-        }
-        return extension as T;
+    function has<T extends Extension>(extensionType: ExtensionType<T>): boolean {
+        return extensionMap.has(extensionType.key);
     }
 
     return {

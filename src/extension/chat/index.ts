@@ -1,6 +1,6 @@
 import { Client, ClientListener } from "../../client";
 import { defineExtensionType, type Extension, type ExtensionType } from "../extension";
-import { ListExtensionType, defineListTypeModel, type List, type ListExtension } from "../list";
+import { TableExtensionType, defineListTypeModel, type Table, type TableExtension } from "../table";
 
 import {
     Channel,
@@ -15,25 +15,25 @@ import {
 export * from "./model";
 
 
-export const ChatExtensionType: ExtensionType<ChatExtension> = defineExtensionType("chat", (client: Client) => new ChatExtension(client), () => [ListExtensionType]);
+export const ChatExtensionType: ExtensionType<ChatExtension> = defineExtensionType("chat", (client: Client) => new ChatExtension(client), () => [TableExtensionType]);
 const MessagesListKey = defineListTypeModel<Message, MessageJson>(ChatExtensionType, "messages", (json) => Message.fromJson(json));
 const ChannelsListKey = defineListTypeModel<Channel, ChannelJson>(ChatExtensionType, "channels", (json) => new Channel(json));
 const ProvidersListKey = defineListTypeModel<Provider, ProviderJson>(ChatExtensionType, "providers", (json) => new Provider(json));
 const RoomsListKey = defineListTypeModel<Room, RoomJson>(ChatExtensionType, "rooms", (json) => new Room(json));
 
 export class ChatExtension implements Extension, ClientListener {
-    listExtension: ListExtension | undefined;
-    messages: List<Message> | undefined;
-    channels: List<Channel> | undefined;
-    providers: List<Provider> | undefined;
-    rooms: List<Room> | undefined;
+    listExtension: TableExtension | undefined;
+    messages: Table<Message> | undefined;
+    channels: Table<Channel> | undefined;
+    providers: Table<Provider> | undefined;
+    rooms: Table<Room> | undefined;
 
     constructor(private readonly client: Client) {
         client.addListener(this);
     }
 
     onInitialized(): void {
-        this.listExtension = this.client.extensions.get(ListExtensionType);
+        this.listExtension = this.client.extensions.get(TableExtensionType);
         this.messages = this.listExtension!.register(MessagesListKey);
         this.channels = this.listExtension!.register(ChannelsListKey);
         this.providers = this.listExtension!.register(ProvidersListKey);
