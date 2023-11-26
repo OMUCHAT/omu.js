@@ -1,23 +1,23 @@
 import { ClientListener, type Client } from "../../client";
 import { defineExtensionType, type Extension, type ExtensionType } from "../extension";
-import { TableExtensionType, defineListTypeModel, type Table } from "../table";
+import { TableExtensionType, defineTableTypeModel, type Table } from "../table";
 
 import { App, type AppJson } from "./model";
 
 
 export const ServerExtensionType: ExtensionType<ServerExtension> = defineExtensionType("server", (client: Client) => new ServerExtension(client), () => [TableExtensionType]);
 
-const AppsListKey = defineListTypeModel<App, AppJson>(ServerExtensionType, "apps", (message) => new App(message));
+const AppsTableKey = defineTableTypeModel<App, AppJson>(ServerExtensionType, "apps", (data) => new App(data));
 
 export class ServerExtension implements Extension, ClientListener {
-    apps: Table<App> | undefined;
+    apps: Table<App>;
 
-    constructor(private readonly client: Client) {
+    constructor(client: Client) {
         client.addListener(this);
+        const listExtension = client.extensions.get(TableExtensionType);
+        this.apps = listExtension.register(AppsTableKey);
     }
 
     onInitialized(): void {
-        const listExtension = this.client.extensions.get(TableExtensionType);
-        this.apps = listExtension.register(AppsListKey);
     }
 }

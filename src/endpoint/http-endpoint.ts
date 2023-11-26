@@ -11,21 +11,21 @@ export class HttpEndpoint implements Endpoint {
         this.address = address;
     }
 
-    async call<D, T>(endpoint: EndpointType<D, T>, data: D): Promise<T> {
-        const endpointUrl = this.getEndpoint(endpoint);
-        const postData = endpoint.serializer.serialize(data);
+    async execute<Req, Res>(endpoint: EndpointType<Req, Res>, data: Req): Promise<Res> {
+        const endpointUrl = this._endpointUrl(endpoint);
+        const json = endpoint.serializer.serialize(data);
         try {
-            const response = await axios.post(endpointUrl, postData);
+            const response = await axios.post(endpointUrl, json);
             return endpoint.serializer.deserialize(response.data);
         } catch (e) {
-            throw new Error(`Failed to call endpoint ${endpoint.type}: ${e}`);
+            throw new Error(`Failed to execute endpoint ${endpoint.key}: ${e}`);
         }
     }
 
-    private getEndpoint(endpoint: EndpointType): string {
+    private _endpointUrl(endpoint: EndpointType): string {
         const protocol = this.address.secure ? "https" : "http";
         const { host, port } = this.address;
-        return `${protocol}://${host}:${port}/api/v1/${endpoint.type}`;
+        return `${protocol}://${host}:${port}/api/v1/${endpoint.key}`;
     }
 
 }

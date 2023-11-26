@@ -24,7 +24,7 @@ export interface Table<T extends Keyable> {
 export interface TableListener<T extends Keyable> {
     onAdd?(items: Map<string, T>): void;
     onSet?(items: Map<string, T>): void;
-    onRemove?(items: string[]): void;
+    onRemove?(items: Map<string, T>): void;
     onClear?(): void;
     onCacheUpdate?(cache: Map<string, T>): void;
 }
@@ -34,14 +34,14 @@ export interface TableType<T extends Keyable, D = any> {
     serializer: Serializer<T, D, T | null>;
 }
 
-export function defineListType<T extends Keyable, D = any>(extensionType: ExtensionType, key: string, serializer: Serializer<T, D, T | null>): TableType<T, D> {
+export function defineTableType<T extends Keyable, D = any>(extensionType: ExtensionType, key: string, serializer: Serializer<T, D, T | null>): TableType<T, D> {
     return {
         key: `${extensionType.key}:${key}`,
         serializer,
     };
 }
 
-export function defineListTypeModel<T extends Model<D> & Keyable, D>(extensionType: ExtensionType, key: string, deserialize: (data: D) => T): TableType<T, D> {
+export function defineTableTypeModel<T extends Model<D> & Keyable, D>(extensionType: ExtensionType, key: string, deserialize: (data: D) => T): TableType<T, D> {
     return {
         key: `${extensionType.key}:${key}`,
         serializer: makeSerializer({ serialize: (item) => item.json(), deserialize }),

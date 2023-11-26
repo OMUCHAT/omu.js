@@ -1,7 +1,12 @@
 import { Model } from "src/interface";
 
-export interface ContentComponentJson {
-    type: string;
+
+export type ContentJson = TextContentJson | ImageContentJson;
+export type Content = TextContent | ImageContent;
+
+
+export interface ContentComponentJson<T extends string = string> {
+    type: T;
     siblings?: ContentJson[];
 }
 
@@ -30,8 +35,7 @@ export class ContentComponent implements Model<ContentComponentJson> {
     }
 }
 
-export interface TextContentJson extends ContentComponentJson {
-    type: "text";
+export interface TextContentJson extends ContentComponentJson<"text"> {
     text: string;
 }
 
@@ -41,6 +45,10 @@ export class TextContent extends ContentComponent implements Model<TextContentJs
         siblings?: Content[]
     ) {
         super("text", siblings);
+    }
+
+    static fromJson(info: TextContentJson): TextContent {
+        return new TextContent(info.text, info.siblings?.map(s => ContentComponent.fromJson(s)));
     }
 
     static of(text: string): TextContent {
@@ -56,8 +64,7 @@ export class TextContent extends ContentComponent implements Model<TextContentJs
     }
 }
 
-export interface ImageContentJson extends ContentComponentJson {
-    type: "image";
+export interface ImageContentJson extends ContentComponentJson<"image"> {
     url: string;
     id: string;
 }
@@ -69,6 +76,10 @@ export class ImageContent extends ContentComponent implements Model<ImageContent
         siblings?: Content[]
     ) {
         super("image", siblings);
+    }
+
+    static fromJson(info: ImageContentJson): ImageContent {
+        return new ImageContent(info.url, info.id, info.siblings?.map(s => ContentComponent.fromJson(s)));
     }
 
     static of(url: string, id: string): ImageContent {
@@ -84,8 +95,3 @@ export class ImageContent extends ContentComponent implements Model<ImageContent
         };
     }
 }
-
-export type ContentJson = TextContentJson | ImageContentJson;
-
-export type Content = TextContent | ImageContent;
-

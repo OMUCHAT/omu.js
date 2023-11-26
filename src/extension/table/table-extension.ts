@@ -9,9 +9,9 @@ import { Table, TableListener, TableType } from "./table";
 
 export const TableExtensionType: ExtensionType<TableExtension> = defineExtensionType("table", (client: Client) => new TableExtension(client));
 type TableEvent = { type: string; }
-export const TableItemAddEvent = TableExtensionType.defineEventType<TableEvent & { items: any[] }>("item_add", makeSerializer({}));
+export const TableItemAddEvent = TableExtensionType.defineEventType<TableEvent & { items: Record<string, any> }>("item_add", makeSerializer({}));
+export const TableItemSetEvent = TableExtensionType.defineEventType<TableEvent & { items: Record<string, any> }>("item_set", makeSerializer({}));
 export const TableItemRemoveEvent = TableExtensionType.defineEventType<TableEvent & { items: Record<string, any> }>("item_remove", makeSerializer({}));
-export const TableItemSetEvent = TableExtensionType.defineEventType<TableEvent & { items: any[] }>("item_set", makeSerializer({}));
 export const TableItemClearEvent = TableExtensionType.defineEventType<TableEvent>("item_clear", makeSerializer({}));
 export const TableItemGetEndpoint = TableExtensionType.defineEndpointType<TableEvent & { items: string[] }, Record<string, any>>("item_get", makeSerializer({}));
 export const TableItemFetchEndpoint = TableExtensionType.defineEndpointType<TableEvent & { limit: number, cursor?: string }, Record<string, any>>("item_fetch", makeSerializer({}));
@@ -38,7 +38,7 @@ export class TableExtension implements Extension {
     get<K extends Keyable>(key: TableType<K>): Table<K> {
         const table = this.tableMap[key.key];
         if (!table) {
-            throw new Error(`No table for key ${key.key}`);
+            throw new Error(`Table for key ${key.key} not registered`);
         }
         return table as Table<K>;
     }
@@ -56,54 +56,42 @@ class TableImpl<T extends Keyable> implements Table<T> {
         this.cache = new Map();
         this.listeners = [];
 
-        this.client.events.addListener(TableItemAddEvent, (event) => {
+        client.events.addListener(TableItemAddEvent, (event) => {
             if (event.type !== this.type.key) {
                 return;
             }
-            const items = new Map(Object.entries(event.items).map(([key, data]) => {
-                const item = this.type.serializer.deserialize(data);
-                if (!item) {
-                    throw new Error(`Failed to deserialize item ${key}`);
-                }
-                return [key, item];
-            }));
+            const items = this.parseItems(event.items);
             this.cache = new Map([...this.cache, ...items]);
             this.listeners.forEach((listener) => {
                 listener.onAdd?.(items);
                 listener.onCacheUpdate?.(this.cache);
             });
         });
-        this.client.events.addListener(TableItemRemoveEvent, (event) => {
+        client.events.addListener(TableItemSetEvent, (event) => {
             if (event.type !== this.type.key) {
                 return;
             }
-            const keys = Object.keys(event.items);
-            keys.forEach((key) => {
-                this.cache.delete(key);
-            });
-            this.listeners.forEach((listener) => {
-                listener.onRemove?.(keys);
-                listener.onCacheUpdate?.(this.cache);
-            });
-        });
-        this.client.events.addListener(TableItemSetEvent, (event) => {
-            if (event.type !== this.type.key) {
-                return;
-            }
-            const items = new Map(Object.entries(event.items).map(([key, data]) => {
-                const item = this.type.serializer.deserialize(data);
-                if (!item) {
-                    throw new Error(`Failed to deserialize item ${key}`);
-                }
-                return [key, item];
-            }));
+            const items = this.parseItems(event.items);
             this.cache = new Map([...this.cache, ...items]);
             this.listeners.forEach((listener) => {
                 listener.onSet?.(items);
                 listener.onCacheUpdate?.(this.cache);
             });
         });
-        this.client.events.addListener(TableItemClearEvent, (event) => {
+        client.events.addListener(TableItemRemoveEvent, (event) => {
+            if (event.type !== this.type.key) {
+                return;
+            }
+            const items = this.parseItems(event.items);
+            items.forEach((_, key) => {
+                this.cache.delete(key);
+            });
+            this.listeners.forEach((listener) => {
+                listener.onRemove?.(items);
+                listener.onCacheUpdate?.(this.cache);
+            });
+        });
+        client.events.addListener(TableItemClearEvent, (event) => {
             if (event.type !== this.type.key) {
                 return;
             }
@@ -130,7 +118,7 @@ class TableImpl<T extends Keyable> implements Table<T> {
         if (this.cache.has(key)) {
             return this.cache.get(key) ?? null;
         }
-        const res = await this.client.endpoint.call(TableItemGetEndpoint, {
+        const res = await this.client.endpoint.execute(TableItemGetEndpoint, {
             type: this.type.key,
             items: [key],
         });
@@ -165,11 +153,12 @@ class TableImpl<T extends Keyable> implements Table<T> {
     }
 
     async remove(...items: T[]): Promise<void> {
+        const data = Object.fromEntries(items.map((item) => {
+            return [item.key(), this.type.serializer.serialize(item)];
+        }));
         this.client.send(TableItemRemoveEvent, {
             type: this.type.key,
-            items: Object.fromEntries(items.map((item) => {
-                return [item.key(), null];
-            })),
+            items: data,
         });
     }
 
@@ -180,7 +169,7 @@ class TableImpl<T extends Keyable> implements Table<T> {
     }
 
     async fetch(limit: number, cursor?: string): Promise<Map<string, T>> {
-        const res = await this.client.endpoint.call(TableItemFetchEndpoint, {
+        const res = await this.client.endpoint.execute(TableItemFetchEndpoint, {
             type: this.type.key,
             cursor,
             limit,
@@ -212,8 +201,19 @@ class TableImpl<T extends Keyable> implements Table<T> {
     }
 
     async size(): Promise<number> {
-        return await this.client.endpoint.call(TableItemSizeEndpoint, {
+        return await this.client.endpoint.execute(TableItemSizeEndpoint, {
             type: this.type.key,
         });
+    }
+
+    private parseItems(items: Record<string, T>): Map<string, T> {
+        return new Map(Object.entries(items).map(([key, data]) => {
+            const item = this.type.serializer.deserialize(data);
+            if (!item) {
+                throw new Error(`Failed to deserialize item ${key}`);
+            }
+            this.cache.set(key, item);
+            return [key, item];
+        }));
     }
 }

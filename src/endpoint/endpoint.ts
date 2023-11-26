@@ -3,7 +3,7 @@ import type { Serializer } from "../interface";
 
 
 export interface EndpointType<ReqType = any, ResType = any, ReqData = any, ResData = any> {
-    type: string;
+    key: string;
     serializer: Serializer<ReqType, ReqData, ResType, ResData>;
 }
 
@@ -11,5 +11,5 @@ export interface EndpointType<ReqType = any, ResType = any, ReqData = any, ResDa
 export interface Endpoint {
     readonly address: Address;
 
-    call<D, T>(endpoint: EndpointType<D, T>, data: D): Promise<T>;
+    execute<D, T>(type: EndpointType<D, T>, data: D): Promise<T>;
 }

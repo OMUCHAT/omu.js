@@ -25,7 +25,7 @@ export function defineExtensionType<T extends Extension>(key: string, create: (c
             serializer,
         }),
         defineEndpointType: (type, serializer) => ({
-            type: `${key}:${type}`,
+            key: `${key}:${type}`,
             serializer
         }),
         dependencies: dependencies ?? (() => []),

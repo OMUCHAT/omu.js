@@ -3,27 +3,27 @@ import { Model } from "src/interface/model";
 export interface RoleJson {
     id?: string;
     name: string;
-    color: string;
     icon_url: string;
     is_owner: boolean;
     is_moderator: boolean;
+    color?: string;
 }
 
 export class Role implements Model<RoleJson> {
     id?: string;
     name: string;
-    color: string;
     icon_url: string;
     is_owner: boolean;
     is_moderator: boolean;
+    color?: string;
 
     constructor(info: RoleJson) {
         this.id = info.id;
         this.name = info.name;
-        this.color = info.color;
         this.icon_url = info.icon_url;
         this.is_owner = info.is_owner;
         this.is_moderator = info.is_moderator;
+        this.color = info.color;
     }
 
     json(): RoleJson {
