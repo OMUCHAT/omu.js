@@ -13,5 +13,8 @@
     "files.associations": {
         "cmath": "cpp",
         "algorithm": "cpp"
+    },
+    "[typescript]": {
+        "editor.defaultFormatter": "vscode.typescript-language-features"
     }
 }

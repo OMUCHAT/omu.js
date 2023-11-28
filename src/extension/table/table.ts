@@ -1,9 +1,7 @@
-import { ExtensionType } from "src/extension";
-import { Model, Serializer } from "src/interface";
-import { Keyable } from "src/interface/keyable";
+import type { Keyable } from 'src/interface/keyable';
+import type { Serializable } from 'src/interface/serializable';
 
-import { makeSerializer } from "../../interface/serializer";
-
+import type { TableInfo } from './model/table-info';
 
 export interface Table<T extends Keyable> {
     readonly cache: Map<string, T>;
@@ -29,21 +27,14 @@ export interface TableListener<T extends Keyable> {
     onCacheUpdate?(cache: Map<string, T>): void;
 }
 
-export interface TableType<T extends Keyable, D = any> {
-    key: string;
-    serializer: Serializer<T, D, T | null>;
+export interface TableType<T extends Keyable, D = unknown> {
+    info: TableInfo;
+    serializer: Serializable<T, D>;
 }
 
-export function defineTableType<T extends Keyable, D = any>(extensionType: ExtensionType, key: string, serializer: Serializer<T, D, T | null>): TableType<T, D> {
-    return {
-        key: `${extensionType.key}:${key}`,
-        serializer,
-    };
-}
-
-export function defineTableTypeModel<T extends Model<D> & Keyable, D>(extensionType: ExtensionType, key: string, deserialize: (data: D) => T): TableType<T, D> {
-    return {
-        key: `${extensionType.key}:${key}`,
-        serializer: makeSerializer({ serialize: (item) => item.json(), deserialize }),
-    };
+export class ModelTableType<T extends Keyable, D = unknown> implements TableType<T, D> {
+    constructor(
+        public readonly info: TableInfo,
+        public readonly serializer: Serializable<T, D>,
+    ) {}
 }

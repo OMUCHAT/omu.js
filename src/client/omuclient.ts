@@ -1,9 +1,9 @@
-import { type Connection, type ConnectionListener } from "../connection";
-import { HttpEndpoint, type Endpoint } from "../endpoint";
-import { EVENTS, createEventRegistry, type EventRegistry, type EventType } from "../event";
-import { ChatExtensionType, ServerExtensionType, TableExtensionType, createExtensionRegistry, type App, type Extension, type ExtensionRegistry, type ExtensionType } from "../extension";
+import { type Connection, type ConnectionListener } from '../connection';
+import { HttpEndpoint, type Endpoint } from '../endpoint';
+import { EVENTS, createEventRegistry, type EventRegistry, type EventType } from '../event';
+import { ChatExtensionType, ServerExtensionType, TableExtensionType, createExtensionRegistry, type App, type Extension, type ExtensionRegistry, type ExtensionType } from '../extension';
 
-import { type Client, type ClientListener } from "./client";
+import { type Client, type ClientListener } from './client';
 
 export class OmuClient implements Client, ConnectionListener {
     readonly app: App;
@@ -64,7 +64,7 @@ export class OmuClient implements Client, ConnectionListener {
 
     addListener(listener: ClientListener): void {
         if (this.listeners.includes(listener)) {
-            throw new Error("Listener already registered");
+            throw new Error('Listener already registered');
         }
         this.listeners.push(listener);
     }
@@ -73,17 +73,17 @@ export class OmuClient implements Client, ConnectionListener {
         this.listeners.splice(this.listeners.indexOf(listener), 1);
     }
 
-    start() {
+    start(): void {
         this.running = true;
         this.listeners.forEach((listener) => {
             listener.onStarted?.();
-        })
+        });
     }
 
-    stop() {
+    stop(): void {
         this.running = false;
         this.listeners.forEach((listener) => {
             listener.onStopped?.();
-        })
+        });
     }
 }

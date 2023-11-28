@@ -1,11 +1,14 @@
-import { Keyable } from "src/interface/keyable";
-import { Model } from "src/interface/model";
+import type { Keyable } from 'src/interface/keyable';
+import type { Model } from 'src/interface/model';
 
-import { Author, AuthorJson } from "./author";
-import { Content, ContentComponent, ContentJson } from "./content";
-import { Gift, GiftJson } from "./gift";
-import { Paid, PaidJson } from "./paid";
-
+import type { AuthorJson } from './author';
+import { Author } from './author';
+import type { Content, ContentJson } from './content';
+import { ContentComponent } from './content';
+import type { GiftJson } from './gift';
+import { Gift } from './gift';
+import type { PaidJson } from './paid';
+import { Paid } from './paid';
 
 export interface MessageJson {
     room_id: string;
@@ -16,7 +19,6 @@ export interface MessageJson {
     gift?: GiftJson;
     created_at?: number;
 }
-
 
 export class Message implements Keyable, Model<MessageJson> {
     room_id: string;
@@ -54,11 +56,11 @@ export class Message implements Keyable, Model<MessageJson> {
             paid: info.paid && new Paid(info.paid),
             gift: info.gift && new Gift(info.gift),
             created_at: info.created_at ? new Date(info.created_at) : undefined,
-        })
+        });
     }
 
     key(): string {
-        return `${this.room_id}#${this.id}`
+        return `${this.room_id}#${this.id}`;
     }
 
     json(): MessageJson {
@@ -70,10 +72,10 @@ export class Message implements Keyable, Model<MessageJson> {
             paid: this.paid && this.paid.json(),
             gift: this.gift && this.gift.json(),
             created_at: this.created_at && this.created_at.getTime(),
-        }
+        };
     }
 
     toString(): string {
-        return `${this.author}: ${this.content}`
+        return `${this.author}: ${this.content}`;
     }
 }

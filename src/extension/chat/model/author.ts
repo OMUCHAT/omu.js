@@ -1,7 +1,8 @@
-import { Keyable } from "src/interface/keyable";
-import { Model } from "src/interface/model";
+import type { Keyable } from 'src/interface/keyable';
+import type { Model } from 'src/interface/model';
 
-import { Role, RoleJson } from "./role";
+import { Role } from './role';
+import type { RoleJson } from './role';
 
 export interface AuthorJson {
     id: string;
@@ -33,7 +34,7 @@ export class Author implements Keyable, Model<AuthorJson> {
             name: this.name,
             avatar_url: this.avatar_url,
             roles: this.roles.map(role => role.json()),
-        }
+        };
     }
 
     toString(): string {

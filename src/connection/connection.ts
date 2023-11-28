@@ -1,10 +1,9 @@
-import { ClientListener } from "../client";
-import type { EventJson } from "../event";
+import type { ClientListener } from '../client';
+import type { EventJson } from '../event';
 
-import { Address } from "./address";
+import type { Address } from './address';
 
-
-export type ConnectionStatus = "connecting" | "connected" | "disconnected";
+export type ConnectionStatus = 'connecting' | 'connected' | 'disconnected';
 
 export interface Connection extends ClientListener {
     readonly address: Address;

@@ -1,4 +1,5 @@
 {
+	"$schema": "http://json.schemastore.org/tsconfig",
     "compilerOptions": {
         "noEmitOnError": true,
         "noImplicitAny": false,
@@ -8,7 +9,6 @@
         "strictNullChecks": true,
         "experimentalDecorators": true,
         "rootDir": "./src",
-        "outDir": "./dist",
         "sourceMap": true,
         "target": "es2020",
         "module": "commonjs",
@@ -20,5 +20,5 @@
         "newLine": "LF"
     },
     "compileOnSave": true,
-    "include": ["./src/**/*.ts"]
+    "include": ["./src/**/*"]
 }

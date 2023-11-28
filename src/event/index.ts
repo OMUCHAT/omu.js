@@ -1,3 +1,3 @@
-export type { EventJson, EventType } from "./event";
-export { EVENTS, createEventRegistry, type EventRegistry } from "./event-registry";
+export { ExtensionEventType, type EventJson, type EventType } from './event';
+export { EVENTS, createEventRegistry, type EventRegistry } from './event-registry';
 

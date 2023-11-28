@@ -1,3 +1,4 @@
-export * from "./table";
-export * from "./table-extension";
+export * from './model';
+export * from './table';
+export * from './table-extension';
 

@@ -1,4 +1,4 @@
-import { Model } from "src/interface/model";
+import type { Model } from 'src/interface/model';
 
 export interface PaidJson {
     amount: number;
@@ -18,7 +18,7 @@ export class Paid implements Model<PaidJson> {
         return {
             amount: this.amount,
             currency: this.currency,
-        }
+        };
     }
 
     toString(): string {

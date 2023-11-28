@@ -1,4 +1,4 @@
-import { Keyable, Model } from "src/interface";
+import type { Keyable, Model } from 'src/interface';
 
 export interface ProviderJson {
     id: string;
@@ -24,6 +24,10 @@ export class Provider implements Keyable, Model<ProviderJson> {
         this.image_url = json.image_url;
         this.description = json.description;
         this.regex = json.regex;
+    }
+
+    static fromJson(json: ProviderJson): Provider {
+        return new Provider(json);
     }
 
     key(): string {

@@ -1,6 +1,5 @@
-import { Keyable } from "src/interface/keyable";
-import { Model } from "src/interface/model";
-
+import type { Keyable } from 'src/interface/keyable';
+import type { Model } from 'src/interface/model';
 
 export interface AppJson {
     name: string;
@@ -52,7 +51,7 @@ export class App implements Keyable, Model<AppJson> {
             site_url: this.site_url,
             repository_url: this.repository_url,
             image_url: this.image_url,
-        }
+        };
     }
 
     toString(): string {

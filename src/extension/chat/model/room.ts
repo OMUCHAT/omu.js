@@ -1,4 +1,4 @@
-import { Keyable, Model } from "src/interface";
+import type { Keyable, Model } from 'src/interface';
 
 export interface RoomJson {
     id: string;
@@ -33,6 +33,10 @@ export class Room implements Keyable, Model<RoomJson> {
         this.url = json.url;
         this.image_url = json.image_url;
         this.viewers = json.viewers;
+    }
+
+    static fromJson(json: RoomJson): Room {
+        return new Room(json);
     }
 
     key(): string {

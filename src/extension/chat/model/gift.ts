@@ -1,4 +1,4 @@
-import { Model } from "src/interface/model";
+import type { Model } from 'src/interface/model';
 
 export interface GiftJson {
     id: string;
@@ -30,7 +30,7 @@ export class Gift implements Model<GiftJson> {
             amount: this.amount,
             image_url: this.image_url,
             is_paid: this.is_paid,
-        }
+        };
     }
 
     toString(): string {

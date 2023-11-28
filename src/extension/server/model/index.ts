@@ -1,7 +1,8 @@
-import type { AppJson } from "./app";
-import { App } from "./app";
+import { App, type AppJson } from './app';
+import { EndpointInfo, type EndpointInfoJson } from './endpoint-info';
+import { ExtensionInfo, type ExtensionInfoJson } from './extension-info';
 
 export {
-    App,
-    AppJson
+    App, EndpointInfo, ExtensionInfo, type AppJson, type EndpointInfoJson, type ExtensionInfoJson
 };
+

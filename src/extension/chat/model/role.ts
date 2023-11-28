@@ -1,4 +1,4 @@
-import { Model } from "src/interface/model";
+import type { Model } from 'src/interface/model';
 
 export interface RoleJson {
     id?: string;
@@ -34,7 +34,7 @@ export class Role implements Model<RoleJson> {
             icon_url: this.icon_url,
             is_owner: this.is_owner,
             is_moderator: this.is_moderator,
-        }
+        };
     }
 
     toString(): string {

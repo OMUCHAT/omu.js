@@ -1,5 +1,5 @@
-import { Keyable } from "src/interface/keyable";
-import { Model } from "src/interface/model";
+import type { Keyable } from 'src/interface/keyable';
+import type { Model } from 'src/interface/model';
 
 export interface ChannelJson {
     provider_id: string;
@@ -11,7 +11,6 @@ export interface ChannelJson {
     icon_url: string;
     created_at: number;
 }
-
 
 export class Channel implements Keyable, Model<ChannelJson> {
     provider_id: string;
@@ -34,7 +33,7 @@ export class Channel implements Keyable, Model<ChannelJson> {
         this.created_at = option.created_at;
     }
 
-    fromJson(json: ChannelJson): Channel {
+    static fromJson(json: ChannelJson): Channel {
         return new Channel(json);
     }
 

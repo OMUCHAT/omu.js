@@ -1,24 +1,28 @@
-import { Client, ClientListener } from "../../client";
-import { defineExtensionType, type Extension, type ExtensionType } from "../extension";
-import { TableExtensionType, defineTableTypeModel, type Table } from "../table";
+import type { Client, ClientListener } from '../../client';
+import { Serializer } from '../../interface/serializable';
+import { defineExtensionType, type Extension, type ExtensionType } from '../extension';
+import { ExtensionInfo } from '../server/model/extension-info';
+import { ModelTableType, TableExtensionType, type Table } from '../table';
+import { TableInfo } from '../table/model/table-info';
 
+import type {
+    ChannelJson,
+    MessageJson,
+    ProviderJson,
+    RoomJson,
+} from './model';
 import {
     Channel,
     Message,
     Provider,
-    ProviderJson,
     Room,
-    RoomJson,
-    type ChannelJson,
-    type MessageJson
-} from "./model";
+} from './model';
 
-
-export const ChatExtensionType: ExtensionType<ChatExtension> = defineExtensionType("chat", (client: Client) => new ChatExtension(client), () => [TableExtensionType]);
-const MessagesTableKey = defineTableTypeModel<Message, MessageJson>(ChatExtensionType, "messages", (json) => Message.fromJson(json));
-const ChannelsTableKey = defineTableTypeModel<Channel, ChannelJson>(ChatExtensionType, "channels", (json) => new Channel(json));
-const ProvidersTableKey = defineTableTypeModel<Provider, ProviderJson>(ChatExtensionType, "providers", (json) => new Provider(json));
-const RoomsTableKey = defineTableTypeModel<Room, RoomJson>(ChatExtensionType, "rooms", (json) => new Room(json));
+export const ChatExtensionType: ExtensionType<ChatExtension> = defineExtensionType(ExtensionInfo.create('chat'), (client: Client) => new ChatExtension(client), () => [TableExtensionType]);
+const MessagesTableKey = new ModelTableType<Message, MessageJson>(TableInfo.create(ChatExtensionType, 'messages'), Serializer.model(Message.fromJson));
+const ChannelsTableKey = new ModelTableType<Channel, ChannelJson>(TableInfo.create(ChatExtensionType, 'channels'), Serializer.model(Channel.fromJson));
+const ProvidersTableKey = new ModelTableType<Provider, ProviderJson>(TableInfo.create(ChatExtensionType, 'providers'), Serializer.model(Provider.fromJson));
+const RoomsTableKey = new ModelTableType<Room, RoomJson>(TableInfo.create(ChatExtensionType, 'rooms'), Serializer.model(Room.fromJson));
 
 export class ChatExtension implements Extension, ClientListener {
     messages: Table<Message>;

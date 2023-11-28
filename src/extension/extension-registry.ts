@@ -1,6 +1,6 @@
-import { Client } from "../client";
+import type { Client } from '../client';
 
-import { Extension, ExtensionType } from "./extension";
+import type { Extension, ExtensionType } from './extension';
 
 export interface ExtensionRegistry {
     register(...types: ExtensionType[]): void;
@@ -14,27 +14,27 @@ export function createExtensionRegistry(client: Client): ExtensionRegistry {
     function register(...types: ExtensionType<Extension>[]): void {
         types.forEach((type) => {
             if (has(type)) {
-                throw new Error(`Extension type ${type.key} already registered`);
+                throw new Error(`Extension type ${type.info.key()} already registered`);
             }
-            type.dependencies().forEach((dependency) => {
+            type.dependencies?.().forEach((dependency) => {
                 if (!has(dependency)) {
-                    throw new Error(`Extension type ${type.key} depends on ${dependency.key} which is not registered`);
+                    throw new Error(`Extension type ${type.info.key()} depends on ${dependency.info.key()} which is not registered`);
                 }
             });
-            extensionMap.set(type.key, type.create(client));
+            extensionMap.set(type.info.key(), type.create(client));
         });
     }
 
     function get<Ext extends Extension>(extensionType: ExtensionType<Ext>): Ext {
-        const extension = extensionMap.get(extensionType.key);
+        const extension = extensionMap.get(extensionType.info.key());
         if (!extension) {
-            throw new Error(`Extension type ${extensionType.key} not registered`);
+            throw new Error(`Extension type ${extensionType.info.key()} not registered`);
         }
         return extension as Ext;
     }
 
     function has<T extends Extension>(extensionType: ExtensionType<T>): boolean {
-        return extensionMap.has(extensionType.key);
+        return extensionMap.has(extensionType.info.key());
     }
 
     return {

@@ -1,3 +1,3 @@
-export type { Endpoint, EndpointType } from "./endpoint";
-export { HttpEndpoint } from "./http-endpoint";
+export { ClientEndpointType, type Endpoint, type EndpointType } from './endpoint';
+export { HttpEndpoint } from './http-endpoint';
 
