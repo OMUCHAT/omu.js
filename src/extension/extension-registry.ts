@@ -3,7 +3,8 @@ import type { Client } from '../client';
 import type { Extension, ExtensionType } from './extension';
 
 export interface ExtensionRegistry {
-    register(...types: ExtensionType[]): void;
+    register<T extends Extension>(type: ExtensionType<T>): T;
+    register_all(types: ExtensionType[]): void;
     get<T extends Extension>(type: ExtensionType<T>): T;
     has<T extends Extension>(type: ExtensionType<T>): boolean;
 }
@@ -11,18 +12,22 @@ export interface ExtensionRegistry {
 export function createExtensionRegistry(client: Client): ExtensionRegistry {
     const extensionMap: Map<string, Extension> = new Map();
 
-    function register(...types: ExtensionType<Extension>[]): void {
-        types.forEach((type) => {
-            if (has(type)) {
-                throw new Error(`Extension type ${type.info.key()} already registered`);
+    function register<T extends Extension>(type: ExtensionType<T>): T {
+        if (has(type)) {
+            throw new Error(`Extension type ${type.info.key()} already registered`);
+        }
+        type.dependencies?.().forEach((dependency) => {
+            if (!has(dependency)) {
+                throw new Error(`Extension type ${type.info.key()} depends on ${dependency.info.key()} which is not registered`);
             }
-            type.dependencies?.().forEach((dependency) => {
-                if (!has(dependency)) {
-                    throw new Error(`Extension type ${type.info.key()} depends on ${dependency.info.key()} which is not registered`);
-                }
-            });
-            extensionMap.set(type.info.key(), type.create(client));
         });
+        const extension = type.create(client);
+        extensionMap.set(type.info.key(), extension);
+        return extension;
+    }
+
+    function register_all(types: ExtensionType[]): void {
+        types.forEach((type) => register(type));
     }
 
     function get<Ext extends Extension>(extensionType: ExtensionType<Ext>): Ext {
@@ -39,6 +44,7 @@ export function createExtensionRegistry(client: Client): ExtensionRegistry {
 
     return {
         register,
+        register_all,
         get,
         has,
     };

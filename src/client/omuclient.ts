@@ -20,24 +20,24 @@ export class OmuClient implements Client, ConnectionListener {
         endpoint?: Endpoint;
         eventsRegistry?: EventRegistry;
         extensionRegistry?: ExtensionRegistry;
-        extensions?: ExtensionType<Extension>[];
+        extensions?: ExtensionType<Extension>[]
     }) {
         const { app, connection, endpoint, eventsRegistry, extensionRegistry, extensions } = options;
         this.running = false;
         this.listeners = [];
         this.app = app;
         this.connection = connection;
+        connection.addListener(this);
         this.events = eventsRegistry ?? createEventRegistry(this);
         this.endpoint = endpoint ?? new HttpEndpoint(connection.address);
         this.extensions = extensionRegistry ?? createExtensionRegistry(this);
 
         this.events.register(EVENTS.Ready);
-        this.extensions.register(TableExtensionType, ServerExtensionType, ChatExtensionType);
+        this.extensions.register_all([TableExtensionType, ServerExtensionType, ChatExtensionType]);
         if (extensions) {
-            this.extensions.register(...extensions);
+            this.extensions.register_all(extensions);
         }
 
-        connection.addListener(this);
         this.addListener(connection);
 
         this.listeners.forEach((listener) => {

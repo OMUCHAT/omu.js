@@ -1,7 +1,6 @@
 
 import type { Client } from 'src/client';
 
-import type { ConnectionListener } from '../connection';
 import type { AppJson } from '../extension';
 import { App } from '../extension';
 import type { Serializable } from '../interface/serializable';
@@ -9,7 +8,7 @@ import { Serializer } from '../interface/serializable';
 
 import type { EventJson, EventType } from './event';
 
-export interface EventRegistry extends ConnectionListener {
+export interface EventRegistry {
     register(...types: EventType[]): void;
     addListener<T, D>(eventType: EventType<T, D>, listener: (data: T) => void): void;
     removeListener(eventType: EventType, listener: (data: unknown) => void): void;

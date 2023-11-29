@@ -18,4 +18,30 @@ export class Serializer<T, D> {
     static model<M extends Model<D>, D>(model: (data: D) => M): Serializable<M, D> {
         return new Serializer<M, D>((data) => data.json(), model);
     }
+
+    static array<T, D>(serializer: Serializable<T, D>): Serializable<T[], D[]> {
+        return new Serializer<T[], D[]>(
+            (data) => data.map((item) => serializer.serialize(item)),
+            (data) => data.map((item) => serializer.deserialize(item)),
+        );
+    }
+
+    static map<V, D>(serializer: Serializable<V, D>): Serializable<Map<string, V>, Map<string, D>> {
+        return new Serializer<Map<string, V>, Map<string, D>>(
+            (data) => {
+                const result = new Map<string, D>();
+                data.forEach((value, key) => {
+                    result.set(key, serializer.serialize(value));
+                });
+                return result;
+            },
+            (data) => {
+                const result = new Map<string, V>();
+                data.forEach((value, key) => {
+                    result.set(key, serializer.deserialize(value));
+                });
+                return result;
+            },
+        );
+    }
 }

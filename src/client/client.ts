@@ -1,6 +1,6 @@
 import type { Connection } from '../connection';
 import type { Endpoint } from '../endpoint';
-import type { EventType , EventRegistry } from '../event';
+import type { EventRegistry, EventType } from '../event';
 import type { ExtensionRegistry } from '../extension';
 
 export interface ClientListener {

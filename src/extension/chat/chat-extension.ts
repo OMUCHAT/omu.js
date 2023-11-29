@@ -1,6 +1,8 @@
 import type { Client, ClientListener } from '../../client';
+import { ClientEndpointType } from '../../endpoint';
 import { Serializer } from '../../interface/serializable';
 import { defineExtensionType, type Extension, type ExtensionType } from '../extension';
+import { EndpointInfo } from '../server';
 import { ExtensionInfo } from '../server/model/extension-info';
 import { ModelTableType, TableExtensionType, type Table } from '../table';
 import { TableInfo } from '../table/model/table-info';
@@ -23,6 +25,11 @@ const MessagesTableKey = new ModelTableType<Message, MessageJson>(TableInfo.crea
 const ChannelsTableKey = new ModelTableType<Channel, ChannelJson>(TableInfo.create(ChatExtensionType, 'channels'), Serializer.model(Channel.fromJson));
 const ProvidersTableKey = new ModelTableType<Provider, ProviderJson>(TableInfo.create(ChatExtensionType, 'providers'), Serializer.model(Provider.fromJson));
 const RoomsTableKey = new ModelTableType<Room, RoomJson>(TableInfo.create(ChatExtensionType, 'rooms'), Serializer.model(Room.fromJson));
+const FetchChannelsByUrlEndpoint = new ClientEndpointType<string, Map<string, Channel>>(
+    EndpointInfo.create(ChatExtensionType, 'fetch_channels_by_url'),
+    Serializer.noop(),
+    Serializer.map(Serializer.model(Channel.fromJson)),
+);
 
 export class ChatExtension implements Extension, ClientListener {
     messages: Table<Message>;
@@ -30,7 +37,7 @@ export class ChatExtension implements Extension, ClientListener {
     providers: Table<Provider>;
     rooms: Table<Room>;
 
-    constructor(client: Client) {
+    constructor(private readonly client: Client) {
         client.addListener(this);
         const tables = client.extensions.get(TableExtensionType);
         this.messages = tables.register(MessagesTableKey);
@@ -40,5 +47,9 @@ export class ChatExtension implements Extension, ClientListener {
     }
 
     onInitialized(): void {
+    }
+
+    async fetchChannelsByUrl(url: string): Promise<Map<string, Channel>> {
+        return await this.client.endpoint.execute(FetchChannelsByUrlEndpoint, url);
     }
 }

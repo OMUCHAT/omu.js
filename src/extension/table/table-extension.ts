@@ -16,6 +16,7 @@ import { ModelTableType } from './table';
 
 export const TableExtensionType: ExtensionType<TableExtension> = defineExtensionType(ExtensionInfo.create('table'), (client: Client) => new TableExtension(client));
 type TableEvent = { type: string; }
+export const TableRegisterEvent = new ExtensionEventType<TableInfo>(TableExtensionType, 'register', Serializer.model(TableInfo.fromJson));
 export const TableItemAddEvent = new ExtensionEventType<TableEvent & { items: Record<string, any> }>(TableExtensionType, 'item_add', Serializer.noop());
 export const TableItemSetEvent = new ExtensionEventType<TableEvent & { items: Record<string, any> }>(TableExtensionType, 'item_set', Serializer.noop());
 export const TableItemRemoveEvent = new ExtensionEventType<TableEvent & { items: Record<string, any> }>(TableExtensionType, 'item_remove', Serializer.noop());
@@ -31,7 +32,7 @@ export class TableExtension implements Extension {
 
     constructor(private readonly client: Client) {
         this.tableMap = new Map();
-        client.events.register(TableItemAddEvent, TableItemRemoveEvent, TableItemSetEvent, TableItemClearEvent);
+        client.events.register(TableRegisterEvent, TableItemAddEvent, TableItemRemoveEvent, TableItemSetEvent, TableItemClearEvent);
         this.tables = this.register(TablesTableType);
     }
 
@@ -63,6 +64,11 @@ class TableImpl<T extends Keyable> implements Table<T> {
         this.listeners = [];
         this.key = type.info.key();
 
+        client.connection.addListener({
+            onConnect() {
+                client.send(TableRegisterEvent, type.info);
+            },
+        });
         client.events.addListener(TableItemAddEvent, (event) => {
             if (event.type !== this.key) {
                 return;
