@@ -4,6 +4,7 @@ import type { Serializable } from 'src/interface/serializable';
 import type { TableInfo } from './model/table-info';
 
 export interface Table<T extends Keyable> {
+    readonly info: TableInfo;
     readonly cache: Map<string, T>;
     get(key: string): Promise<T | null>;
     add(...item: T[]): Promise<void>;
@@ -17,6 +18,7 @@ export interface Table<T extends Keyable> {
 
     addListener(listener: TableListener<T>): void;
     removeListener(listener: TableListener<T>): void;
+    listen(listener: (items: Map<string, T>) => void): () => void;
 }
 
 export interface TableListener<T extends Keyable> {

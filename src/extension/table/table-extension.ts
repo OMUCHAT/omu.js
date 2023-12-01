@@ -18,7 +18,7 @@ export const TableExtensionType: ExtensionType<TableExtension> = defineExtension
 type TableEvent = { type: string; }
 export const TableRegisterEvent = new ExtensionEventType<TableInfo>(TableExtensionType, 'register', Serializer.model(TableInfo.fromJson));
 export const TableItemAddEvent = new ExtensionEventType<TableEvent & { items: Record<string, any> }>(TableExtensionType, 'item_add', Serializer.noop());
-export const TableItemSetEvent = new ExtensionEventType<TableEvent & { items: Record<string, any> }>(TableExtensionType, 'item_set', Serializer.noop());
+export const TableItemUpdateEvent = new ExtensionEventType<TableEvent & { items: Record<string, any> }>(TableExtensionType, 'item_update', Serializer.noop());
 export const TableItemRemoveEvent = new ExtensionEventType<TableEvent & { items: Record<string, any> }>(TableExtensionType, 'item_remove', Serializer.noop());
 export const TableItemClearEvent = new ExtensionEventType<TableEvent>(TableExtensionType, 'item_clear', Serializer.noop());
 export const TableItemGetEndpoint = new ClientEndpointType<TableEvent & { items: string[] }, Record<string, any>>(EndpointInfo.create(TableExtensionType, 'item_get'));
@@ -32,7 +32,7 @@ export class TableExtension implements Extension {
 
     constructor(private readonly client: Client) {
         this.tableMap = new Map();
-        client.events.register(TableRegisterEvent, TableItemAddEvent, TableItemRemoveEvent, TableItemSetEvent, TableItemClearEvent);
+        client.events.register(TableRegisterEvent, TableItemAddEvent, TableItemRemoveEvent, TableItemUpdateEvent, TableItemClearEvent);
         this.tables = this.register(TablesTableType);
     }
 
@@ -52,6 +52,7 @@ export class TableExtension implements Extension {
 }
 
 class TableImpl<T extends Keyable> implements Table<T> {
+    public readonly info: TableInfo;
     public cache: Map<string, T>;
     private readonly listeners: TableListener<T>[];
     private readonly key: string;
@@ -62,13 +63,10 @@ class TableImpl<T extends Keyable> implements Table<T> {
     ) {
         this.cache = new Map();
         this.listeners = [];
+        this.info = type.info;
         this.key = type.info.key();
 
-        client.connection.addListener({
-            onConnect() {
-                client.send(TableRegisterEvent, type.info);
-            },
-        });
+        client.connection.addListener(this);
         client.events.addListener(TableItemAddEvent, (event) => {
             if (event.type !== this.key) {
                 return;
@@ -80,7 +78,7 @@ class TableImpl<T extends Keyable> implements Table<T> {
                 listener.onCacheUpdate?.(this.cache);
             });
         });
-        client.events.addListener(TableItemSetEvent, (event) => {
+        client.events.addListener(TableItemUpdateEvent, (event) => {
             if (event.type !== this.key) {
                 return;
             }
@@ -127,6 +125,22 @@ class TableImpl<T extends Keyable> implements Table<T> {
         this.listeners.splice(this.listeners.indexOf(listener), 1);
     }
 
+    listen(listener: (items: Map<string, T>) => void): () => void {
+        const tableListener = {
+            onCacheUpdate: listener,
+        };
+        this.addListener(tableListener);
+        this.fetch(this.info.cacheSize ?? 100);
+        return () => {
+            this.removeListener(tableListener);
+        };
+    }
+
+    onConnect(): void {
+        this.fetch(this.info.cacheSize ?? 100);
+        this.client.send(TableRegisterEvent, this.type.info);
+    }
+
     async get(key: string): Promise<T | null> {
         if (this.cache.has(key)) {
             return this.cache.get(key) ?? null;
@@ -156,7 +170,7 @@ class TableImpl<T extends Keyable> implements Table<T> {
         const data = Object.fromEntries(items.map((item) => {
             return [item.key(), this.type.serializer.serialize(item)];
         }));
-        this.client.send(TableItemSetEvent, {
+        this.client.send(TableItemUpdateEvent, {
             type: this.key,
             items: data,
         });

@@ -9,6 +9,7 @@ export interface AppJson {
     authors?: string[];
     site_url?: string;
     repository_url?: string;
+    license?: string;
     image_url?: string;
 }
 
@@ -20,6 +21,7 @@ export class App implements Keyable, Model<AppJson> {
     authors?: string[];
     site_url?: string;
     repository_url?: string;
+    license?: string;
     image_url?: string;
 
     constructor(info: AppJson) {
@@ -30,6 +32,7 @@ export class App implements Keyable, Model<AppJson> {
         this.authors = info.authors;
         this.site_url = info.site_url;
         this.repository_url = info.repository_url;
+        this.license = info.license;
         this.image_url = info.image_url;
     }
 
@@ -50,6 +53,7 @@ export class App implements Keyable, Model<AppJson> {
             authors: this.authors,
             site_url: this.site_url,
             repository_url: this.repository_url,
+            license: this.license,
             image_url: this.image_url,
         };
     }

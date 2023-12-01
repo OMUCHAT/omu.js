@@ -52,9 +52,9 @@ export class Message implements Keyable, Model<MessageJson> {
             room_id: info.room_id,
             id: info.id,
             content: info.content && ContentComponent.fromJson(info.content),
-            author: info.author && new Author(info.author),
-            paid: info.paid && new Paid(info.paid),
-            gift: info.gift && new Gift(info.gift),
+            author: info.author && Author.fromJson(info.author),
+            paid: info.paid && Paid.fromJson(info.paid),
+            gift: info.gift && Gift.fromJson(info.gift),
             created_at: info.created_at ? new Date(info.created_at) : undefined,
         });
     }

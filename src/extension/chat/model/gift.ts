@@ -15,12 +15,28 @@ export class Gift implements Model<GiftJson> {
     image_url: string;
     is_paid: boolean;
 
-    constructor(info: GiftJson) {
-        this.id = info.id;
-        this.name = info.name;
-        this.amount = info.amount;
-        this.image_url = info.image_url;
-        this.is_paid = info.is_paid;
+    constructor(options: {
+        id: string;
+        name: string;
+        amount: number;
+        image_url: string;
+        is_paid: boolean;
+    }) {
+        this.id = options.id;
+        this.name = options.name;
+        this.amount = options.amount;
+        this.image_url = options.image_url;
+        this.is_paid = options.is_paid;
+    }
+
+    static fromJson(info: GiftJson): Gift {
+        return new Gift({
+            id: info.id,
+            name: info.name,
+            amount: info.amount,
+            image_url: info.image_url,
+            is_paid: info.is_paid,
+        });
     }
 
     json(): GiftJson {

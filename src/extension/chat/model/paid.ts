@@ -9,9 +9,19 @@ export class Paid implements Model<PaidJson> {
     amount: number;
     currency: string;
 
-    constructor(info: PaidJson) {
-        this.amount = info.amount;
-        this.currency = info.currency;
+    constructor(options: {
+        amount: number;
+        currency: string;
+    }) {
+        this.amount = options.amount;
+        this.currency = options.currency;
+    }
+
+    static fromJson(info: PaidJson): Paid {
+        return new Paid({
+            amount: info.amount,
+            currency: info.currency,
+        });
     }
 
     json(): PaidJson {
