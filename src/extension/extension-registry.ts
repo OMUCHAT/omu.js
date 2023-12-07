@@ -26,7 +26,7 @@ export function createExtensionRegistry(client: Client): ExtensionRegistry {
         return extension;
     }
 
-    function register_all(types: ExtensionType[]): void {
+    function registerAll(types: ExtensionType[]): void {
         types.forEach((type) => register(type));
     }
 
@@ -44,7 +44,7 @@ export function createExtensionRegistry(client: Client): ExtensionRegistry {
 
     return {
         register,
-        registerAll: register_all,
+        registerAll: registerAll,
         get,
         has,
     };
