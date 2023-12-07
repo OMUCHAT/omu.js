@@ -4,7 +4,7 @@ import type { Extension, ExtensionType } from './extension';
 
 export interface ExtensionRegistry {
     register<T extends Extension>(type: ExtensionType<T>): T;
-    register_all(types: ExtensionType[]): void;
+    registerAll(types: ExtensionType[]): void;
     get<T extends Extension>(type: ExtensionType<T>): T;
     has<T extends Extension>(type: ExtensionType<T>): boolean;
 }
@@ -44,7 +44,7 @@ export function createExtensionRegistry(client: Client): ExtensionRegistry {
 
     return {
         register,
-        register_all,
+        registerAll: register_all,
         get,
         has,
     };

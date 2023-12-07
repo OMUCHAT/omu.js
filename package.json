@@ -1,5 +1,5 @@
 {
-    "name": "@omuchat/client",
+    "name": "@omuchat/omu.js",
     "version": "0.0.0",
     "scripts": {
         "ts": "npm run ts-esm && npm run ts-dts",

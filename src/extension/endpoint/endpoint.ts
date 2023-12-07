@@ -1,7 +1,6 @@
-import type { EndpointInfo } from 'src/extension/server/model/endpoint-info';
+import { Serializer, type Serializable } from '../../interface/serializable';
 
-import type { Address } from '../connection';
-import { Serializer, type Serializable } from '../interface/serializable';
+import type { EndpointInfo } from './model';
 
 export interface EndpointType<Req = unknown, Res = unknown, ReqData = unknown, ResData = unknown> {
     info: EndpointInfo;
@@ -19,10 +18,4 @@ export class ClientEndpointType<Req = unknown, Res = unknown> implements Endpoin
         this.requestSerializer = requestSerializer ?? Serializer.noop();
         this.responseSerializer = responseSerializer ?? Serializer.noop();
     }
-}
-
-export interface Endpoint {
-    readonly address: Address;
-
-    execute<Req, Res, ReqData, ResData>(endpoint: EndpointType<Req, Res, ReqData, ResData>, data: Req): Promise<Res>;
 }

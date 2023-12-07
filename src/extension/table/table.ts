@@ -18,7 +18,7 @@ export interface Table<T extends Keyable> {
 
     addListener(listener: TableListener<T>): void;
     removeListener(listener: TableListener<T>): void;
-    listen(listener: (items: Map<string, T>) => void): () => void;
+    listen(listener?: (items: Map<string, T>) => void): () => void;
 }
 
 export interface TableListener<T extends Keyable> {

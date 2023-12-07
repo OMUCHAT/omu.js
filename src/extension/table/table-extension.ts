@@ -1,12 +1,11 @@
-
 import type { Client } from 'src/client';
 
-import { ClientEndpointType } from '../../endpoint';
 import { ExtensionEventType } from '../../event';
 import { Serializer, type Keyable } from '../../interface';
+import { ClientEndpointType } from '../endpoint';
+import { EndpointInfo } from '../endpoint/model';
 import type { Extension, ExtensionType } from '../extension';
 import { defineExtensionType } from '../extension';
-import { EndpointInfo } from '../server/model/endpoint-info';
 import { ExtensionInfo } from '../server/model/extension-info';
 
 import type { TableInfoJson } from './model/table-info';
@@ -24,7 +23,7 @@ export const TableItemClearEvent = new ExtensionEventType<TableEvent>(TableExten
 export const TableItemGetEndpoint = new ClientEndpointType<TableEvent & { items: string[] }, Record<string, any>>(EndpointInfo.create(TableExtensionType, 'item_get'));
 export const TableItemFetchEndpoint = new ClientEndpointType<TableEvent & { limit: number, cursor?: string }, Record<string, any>>(EndpointInfo.create(TableExtensionType, 'item_fetch'));
 export const TableItemSizeEndpoint = new ClientEndpointType<TableEvent, number>(EndpointInfo.create(TableExtensionType, 'item_size'));
-export const TablesTableType = new ModelTableType<TableInfo, TableInfoJson>(new TableInfo('table', 'tables'), Serializer.model(TableInfo.fromJson));
+export const TablesTableType = new ModelTableType<TableInfo, TableInfoJson>(TableInfo.create(TableExtensionType, 'tables'), Serializer.model(TableInfo.fromJson));
 
 export class TableExtension implements Extension {
     private readonly tableMap: Map<string, Table<Keyable>>;
@@ -56,6 +55,7 @@ class TableImpl<T extends Keyable> implements Table<T> {
     public cache: Map<string, T>;
     private readonly listeners: TableListener<T>[];
     private readonly key: string;
+    private listening: boolean;
 
     constructor(
         private readonly client: Client,
@@ -65,6 +65,7 @@ class TableImpl<T extends Keyable> implements Table<T> {
         this.listeners = [];
         this.info = type.info;
         this.key = type.info.key();
+        this.listening = false;
 
         client.connection.addListener(this);
         client.events.addListener(TableItemAddEvent, (event) => {
@@ -125,18 +126,24 @@ class TableImpl<T extends Keyable> implements Table<T> {
         this.listeners.splice(this.listeners.indexOf(listener), 1);
     }
 
-    listen(listener: (items: Map<string, T>) => void): () => void {
+    listen(listener?: (items: Map<string, T>) => void): () => void {
+        this.listening = true;
         const tableListener = {
             onCacheUpdate: listener,
         };
         this.addListener(tableListener);
-        this.fetch(this.info.cacheSize ?? 100);
+        if (this.client.connection.connected) {
+            this.fetch(this.info.cacheSize ?? 100);
+        }
         return () => {
             this.removeListener(tableListener);
         };
     }
 
     onConnect(): void {
+        if (!this.listening) {
+            return;
+        }
         this.fetch(this.info.cacheSize ?? 100);
         this.client.send(TableRegisterEvent, this.type.info);
     }
@@ -145,7 +152,7 @@ class TableImpl<T extends Keyable> implements Table<T> {
         if (this.cache.has(key)) {
             return this.cache.get(key) ?? null;
         }
-        const res = await this.client.endpoint.execute(TableItemGetEndpoint, {
+        const res = await this.client.endpoints.call(TableItemGetEndpoint, {
             type: this.key,
             items: [key],
         });
@@ -193,7 +200,7 @@ class TableImpl<T extends Keyable> implements Table<T> {
     }
 
     async fetch(limit: number, cursor?: string): Promise<Map<string, T>> {
-        const res = await this.client.endpoint.execute(TableItemFetchEndpoint, {
+        const res = await this.client.endpoints.call(TableItemFetchEndpoint, {
             type: this.key,
             cursor,
             limit,
@@ -220,7 +227,7 @@ class TableImpl<T extends Keyable> implements Table<T> {
     }
 
     async size(): Promise<number> {
-        return await this.client.endpoint.execute(TableItemSizeEndpoint, {
+        return await this.client.endpoints.call(TableItemSizeEndpoint, {
             type: this.key,
         });
     }

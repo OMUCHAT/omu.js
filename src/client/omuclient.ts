@@ -1,7 +1,8 @@
-import { type Connection, type ConnectionListener } from '../connection';
-import { HttpEndpoint, type Endpoint } from '../endpoint';
+
+import { WebsocketConnection, type Address, type Connection, type ConnectionListener } from '../connection';
 import { EVENTS, createEventRegistry, type EventRegistry, type EventType } from '../event';
-import { ChatExtensionType, ServerExtensionType, TableExtensionType, createExtensionRegistry, type App, type Extension, type ExtensionRegistry, type ExtensionType } from '../extension';
+import type { App, EndpointExtension, Extension, ExtensionRegistry, ExtensionType, ServerExtension, TableExtension } from '../extension';
+import { EndpointExtensionType, ServerExtensionType, TableExtensionType, createExtensionRegistry } from '../extension';
 
 import { type Client, type ClientListener } from './client';
 
@@ -9,36 +10,39 @@ export class OmuClient implements Client, ConnectionListener {
     readonly app: App;
     readonly connection: Connection;
     readonly events: EventRegistry;
-    readonly endpoint: Endpoint;
     readonly extensions: ExtensionRegistry;
+    readonly endpoints: EndpointExtension;
+    readonly tables: TableExtension;
+    readonly server: ServerExtension;
     readonly listeners: ClientListener[];
     public running: boolean;
 
     constructor(options: {
         app: App;
-        connection: Connection;
-        endpoint?: Endpoint;
+        address: Address;
+        connection?: Connection;
         eventsRegistry?: EventRegistry;
         extensionRegistry?: ExtensionRegistry;
         extensions?: ExtensionType<Extension>[]
     }) {
-        const { app, connection, endpoint, eventsRegistry, extensionRegistry, extensions } = options;
+        const { app, connection, eventsRegistry, extensionRegistry, extensions } = options;
         this.running = false;
         this.listeners = [];
         this.app = app;
-        this.connection = connection;
-        connection.addListener(this);
+        this.connection = connection ?? new WebsocketConnection(options.address);
+        this.connection.addListener(this);
         this.events = eventsRegistry ?? createEventRegistry(this);
-        this.endpoint = endpoint ?? new HttpEndpoint(connection.address);
         this.extensions = extensionRegistry ?? createExtensionRegistry(this);
 
         this.events.register(EVENTS.Ready);
-        this.extensions.register_all([TableExtensionType, ServerExtensionType, ChatExtensionType]);
+        this.tables = this.extensions.register(TableExtensionType);
+        this.endpoints = this.extensions.register(EndpointExtensionType);
+        this.server = this.extensions.register(ServerExtensionType);
         if (extensions) {
-            this.extensions.register_all(extensions);
+            this.extensions.registerAll(extensions);
         }
 
-        this.addListener(connection);
+        this.addListener(this.connection);
 
         this.listeners.forEach((listener) => {
             listener.onInitialized?.();
