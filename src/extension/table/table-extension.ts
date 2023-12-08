@@ -73,10 +73,9 @@ class TableImpl<T extends Keyable> implements Table<T> {
                 return;
             }
             const items = this.parseItems(event.items);
-            this.cache = new Map([...this.cache, ...items]);
+            this.updateCache(items);
             this.listeners.forEach((listener) => {
                 listener.onAdd?.(items);
-                listener.onCacheUpdate?.(this.cache);
             });
         });
         client.events.addListener(TableItemUpdateEvent, (event) => {
@@ -84,10 +83,9 @@ class TableImpl<T extends Keyable> implements Table<T> {
                 return;
             }
             const items = this.parseItems(event.items);
-            this.cache = new Map([...this.cache, ...items]);
+            this.updateCache(items);
             this.listeners.forEach((listener) => {
                 listener.onSet?.(items);
-                listener.onCacheUpdate?.(this.cache);
             });
         });
         client.events.addListener(TableItemRemoveEvent, (event) => {
@@ -112,6 +110,20 @@ class TableImpl<T extends Keyable> implements Table<T> {
                 listener.onClear?.();
                 listener.onCacheUpdate?.(this.cache);
             });
+        });
+    }
+
+    private updateCache(items: Map<string, T>): void {
+        if (typeof this.info.cacheSize === 'undefined') {
+            this.cache = new Map([...this.cache, ...items]);
+        } else {
+            const newCache = new Map([...this.cache, ...items]);
+            const cacheSize = this.info.cacheSize;
+            const cache = new Map([...newCache.entries()].slice(-cacheSize));
+            this.cache = cache;
+        }
+        this.listeners.forEach((listener) => {
+            listener.onCacheUpdate?.(this.cache);
         });
     }
 
@@ -216,7 +228,7 @@ class TableImpl<T extends Keyable> implements Table<T> {
         return items;
     }
 
-    async *iterator(): AsyncIterator<T> {
+    async *iter(): AsyncIterator<T> {
         const cursor: string | undefined = undefined;
         let items: Map<string, T> = await this.fetch(100, cursor);
         yield* items.values();

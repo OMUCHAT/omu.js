@@ -13,7 +13,7 @@ export interface Table<T extends Keyable> {
     clear(): Promise<void>;
 
     fetch(limit: number, cursor?: string): Promise<Map<string, T>>;
-    iterator(): AsyncIterator<T>;
+    iter(): AsyncIterator<T>;
     size(): Promise<number>;
 
     addListener(listener: TableListener<T>): void;
