@@ -81,6 +81,6 @@ function defineEvent<T, D>(type: string, serializer: Serializable<T, D>): EventT
 }
 
 export const EVENTS = {
-    Connect: defineEvent<App, AppJson>('Connect', Serializer.model(App.fromJson)),
-    Ready: defineEvent<undefined, undefined>('Ready', Serializer.noop()),
+    Connect: defineEvent<App, AppJson>('connect', Serializer.model(App.fromJson)),
+    Ready: defineEvent<undefined, undefined>('ready', Serializer.noop()),
 };
