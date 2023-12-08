@@ -55,13 +55,13 @@ export class TableInfo implements Keyable, Model<TableInfoJson> {
         });
     }
 
-    setCache(cache: boolean, cacheSize?: number): TableInfo {
+    setCache(cacheSize?: number): TableInfo {
         return new TableInfo({
             extension: this.extension,
             name: this.name,
             description: this.description,
             useDatabase: this.useDatabase,
-            cache,
+            cache: true,
             cacheSize,
         });
     }
