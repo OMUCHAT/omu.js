@@ -98,4 +98,13 @@ export class WebsocketConnection implements Connection {
     removeListener(listener: ConnectionListener): void {
         this.listeners.splice(this.listeners.indexOf(listener), 1);
     }
+
+    once(listener: () => void): void {
+        if (this.connected) {
+            listener();
+        }
+        this.addListener({
+            onConnect: listener,
+        });
+    }
 }

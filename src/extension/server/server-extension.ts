@@ -20,8 +20,8 @@ export class ServerExtension implements Extension, ClientListener {
     constructor(client: Client) {
         client.addListener(this);
         const listExtension = client.extensions.get(TableExtensionType);
-        this.apps = listExtension.register(AppsTableKey);
-        this.extensions = listExtension.register(ExtensionsTableType);
+        this.apps = listExtension.get(AppsTableKey);
+        this.extensions = listExtension.get(ExtensionsTableType);
     }
 
     onInitialized(): void {

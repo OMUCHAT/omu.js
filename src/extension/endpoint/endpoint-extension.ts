@@ -36,7 +36,7 @@ export class EndpointExtension {
     constructor(private readonly client: Client) {
         this.endpointMap = new Map();
         this.promiseMap = new Map();
-        this.endpoints = this.client.tables.register(EndpointsTableType);
+        this.endpoints = this.client.tables.get(EndpointsTableType);
         this.key = 0;
         client.events.register(EndpointRegisterEvent, EndpointCallEvent, EndpointReceiveEvent, EndpointErrorEvent);
         client.events.addListener(EndpointReceiveEvent, (event) => {

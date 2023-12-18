@@ -1,6 +1,6 @@
 import type { Connection } from '../connection';
 import type { EventRegistry, EventType } from '../event';
-import type { ExtensionRegistry, ServerExtension, TableExtension } from '../extension';
+import type { App, ExtensionRegistry, RegistryExtension, ServerExtension, TableExtension } from '../extension';
 import type { EndpointExtension } from '../extension/endpoint';
 
 export interface ClientListener {
@@ -10,11 +10,13 @@ export interface ClientListener {
 }
 
 export interface Client {
+    readonly app: App;
     readonly connection: Connection;
     readonly events: EventRegistry;
     readonly extensions: ExtensionRegistry;
     readonly endpoints: EndpointExtension;
     readonly tables: TableExtension;
+    readonly registry: RegistryExtension;
     readonly server: ServerExtension;
     readonly running: boolean;
 

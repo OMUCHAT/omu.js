@@ -1,3 +1,4 @@
+import type { Client } from 'src/client';
 import type { ExtensionType } from 'src/extension';
 
 import type { Serializable } from '../interface';
@@ -24,6 +25,20 @@ export class ExtensionEventType<T = any, D = any> implements EventType<T, D> {
     ) {
         this.extensionType = extensionType;
         this.type = `${extensionType.info.key()}:${type}`;
+        this.serializer = serializer;
+    }
+}
+
+export class ClientEventType<T = any, D = any> implements EventType<T, D> {
+    public readonly type: string;
+    public serializer: Serializable<T, D>;
+
+    constructor(
+        client: Client,
+        type: string,
+        serializer: Serializable<T, D>,
+    ) {
+        this.type = `${client.app.key()}:${type}`;
         this.serializer = serializer;
     }
 }

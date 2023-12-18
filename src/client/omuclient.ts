@@ -1,8 +1,8 @@
 
 import { WebsocketConnection, type Address, type Connection, type ConnectionListener } from '../connection';
 import { EVENTS, createEventRegistry, type EventRegistry, type EventType } from '../event';
-import type { App, EndpointExtension, Extension, ExtensionRegistry, ExtensionType, ServerExtension, TableExtension } from '../extension';
-import { EndpointExtensionType, ServerExtensionType, TableExtensionType, createExtensionRegistry } from '../extension';
+import type { App, EndpointExtension, Extension, ExtensionRegistry, ExtensionType, RegistryExtension, ServerExtension, TableExtension } from '../extension';
+import { EndpointExtensionType, RegistryExtensionType, ServerExtensionType, TableExtensionType, createExtensionRegistry } from '../extension';
 
 import { type Client, type ClientListener } from './client';
 
@@ -13,6 +13,7 @@ export class OmuClient implements Client, ConnectionListener {
     readonly extensions: ExtensionRegistry;
     readonly endpoints: EndpointExtension;
     readonly tables: TableExtension;
+    readonly registry: RegistryExtension;
     readonly server: ServerExtension;
     readonly listeners: ClientListener[];
     public running: boolean;
@@ -38,6 +39,7 @@ export class OmuClient implements Client, ConnectionListener {
         this.tables = this.extensions.register(TableExtensionType);
         this.endpoints = this.extensions.register(EndpointExtensionType);
         this.server = this.extensions.register(ServerExtensionType);
+        this.registry = this.extensions.register(RegistryExtensionType);
         if (extensions) {
             this.extensions.registerAll(extensions);
         }

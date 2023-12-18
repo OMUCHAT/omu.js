@@ -6,7 +6,8 @@ import type { TableInfo } from './model/table-info';
 export interface Table<T extends Keyable> {
     readonly info: TableInfo;
     readonly cache: Map<string, T>;
-    get(key: string): Promise<T | null>;
+    get(key: string): Promise<T | undefined>;
+    getMany(keys: string[]): Promise<Map<string, T>>;
     add(...item: T[]): Promise<void>;
     set(...item: T[]): Promise<void>;
     remove(...items: T[]): Promise<void>;
@@ -19,6 +20,8 @@ export interface Table<T extends Keyable> {
     addListener(listener: TableListener<T>): void;
     removeListener(listener: TableListener<T>): void;
     listen(listener?: (items: Map<string, T>) => void): () => void;
+
+    proxy(proxy: (item: T) => T | null): () => void;
 }
 
 export interface TableListener<T extends Keyable> {

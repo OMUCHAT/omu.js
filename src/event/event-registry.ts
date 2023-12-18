@@ -10,8 +10,8 @@ import type { EventJson, EventType } from './event';
 
 export interface EventRegistry {
     register(...types: EventType[]): void;
-    addListener<T, D>(eventType: EventType<T, D>, listener: (data: T) => void): void;
-    removeListener(eventType: EventType, listener: (data: unknown) => void): void;
+    addListener<T, D>(eventType: EventType<T, D>, listener: (event: T) => void): void;
+    removeListener(eventType: EventType, listener: (event: any) => void): void;
 }
 
 interface EventEntry<T = unknown, D = unknown> {
@@ -34,7 +34,7 @@ export function createEventRegistry(client: Client): EventRegistry {
         });
     }
 
-    function addListener<T, D>(eventType: EventType<T, D>, listener: (data: T) => void): void {
+    function addListener<T, D>(eventType: EventType<T, D>, listener: (event: T) => void): void {
         const eventInfo = eventMap.get(eventType.type) as EventEntry<T, D> | undefined;
         if (!eventInfo) {
             throw new Error(`No event for type ${eventType.type}`);
@@ -42,7 +42,7 @@ export function createEventRegistry(client: Client): EventRegistry {
         eventInfo.listeners.push(listener);
     }
 
-    function removeListener(eventType: EventType, listener: (data: unknown) => void): void {
+    function removeListener(eventType: EventType, listener: (event: any) => void): void {
         const eventInfo = eventMap.get(eventType.type);
         if (!eventInfo) {
             throw new Error(`No event for type ${eventType.type}`);
