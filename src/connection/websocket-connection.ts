@@ -77,7 +77,7 @@ export class WebsocketConnection implements Connection {
     private wsEndpoint(): string {
         const protocol = this.address.secure ? 'wss' : 'ws';
         const { host, port } = this.address;
-        return `${protocol}://${host}:${port}/api/v1/ws`;
+        return `${protocol}://${host}:${port}/ws`;
     }
 
     onStarted(): void {
