@@ -243,7 +243,6 @@ class TableImpl<T extends Keyable> implements Table<T> {
             type: this.key,
             items: data,
         });
-        console.log('add', data);
     }
 
     async set(...items: T[]): Promise<void> {
