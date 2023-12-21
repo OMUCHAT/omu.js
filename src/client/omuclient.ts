@@ -8,6 +8,7 @@ import { type Client, type ClientListener } from './client';
 
 export class OmuClient implements Client, ConnectionListener {
     readonly app: App;
+    readonly address: Address;
     readonly connection: Connection;
     readonly events: EventRegistry;
     readonly extensions: ExtensionRegistry;
@@ -30,6 +31,7 @@ export class OmuClient implements Client, ConnectionListener {
         this.running = false;
         this.listeners = [];
         this.app = app;
+        this.address = options.address;
         this.connection = connection ?? new WebsocketConnection(options.address);
         this.connection.addListener(this);
         this.events = eventsRegistry ?? createEventRegistry(this);
@@ -49,6 +51,14 @@ export class OmuClient implements Client, ConnectionListener {
         this.listeners.forEach((listener) => {
             listener.onInitialized?.();
         });
+    }
+
+    proxy(url: string): string {
+        return this.connection.proxy(url);
+    }
+
+    asset(url: string): string {
+        return this.connection.asset(url);
     }
 
     onConnect(): void {

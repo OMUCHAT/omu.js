@@ -14,6 +14,9 @@ export interface Connection extends ClientListener {
     send(event: EventJson): void;
     status(): ConnectionStatus;
 
+    proxy(url: string): string;
+    asset(url: string): string;
+
     addListener(listener: ConnectionListener): void;
     removeListener(listener: ConnectionListener): void;
     once(listener: () => void): void;

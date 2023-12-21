@@ -7,12 +7,13 @@ import { ExtensionInfo } from '../server';
 import type { Table } from '../table';
 import { ModelTableType, TableInfo } from '../table';
 
-import type { EndpointType } from './endpoint';
-import type { EndpointInfo, EndpointInfoJson } from './model';
+import { JsonEndpointType, type EndpointType } from './endpoint';
+import type { EndpointInfoJson } from './model';
+import { EndpointInfo } from './model';
 
 export const EndpointExtensionType: ExtensionType<EndpointExtension> = defineExtensionType(ExtensionInfo.create('endpoint'), (client: Client) => new EndpointExtension(client), () => []);
 
-export const EndpointRegisterEvent = new ExtensionEventType<EndpointInfo>(EndpointExtensionType, 'register', Serializer.model(TableInfo.fromJson));
+export const EndpointRegisterEvent = new ExtensionEventType<EndpointInfo>(EndpointExtensionType, 'register', Serializer.model(EndpointInfo.fromJson));
 type EndpointEvent = {
     type: string;
     key: number;
@@ -20,7 +21,7 @@ type EndpointEvent = {
 export const EndpointCallEvent = new ExtensionEventType<EndpointEvent & { data: any }>(EndpointExtensionType, 'call', Serializer.noop());
 export const EndpointReceiveEvent = new ExtensionEventType<EndpointEvent & { data: any }>(EndpointExtensionType, 'receive', Serializer.noop());
 export const EndpointErrorEvent = new ExtensionEventType<EndpointEvent & { error: string }>(EndpointExtensionType, 'error', Serializer.noop());
-export const EndpointsTableType = new ModelTableType<EndpointInfo, EndpointInfoJson>(TableInfo.create(EndpointExtensionType, 'endpoints'), Serializer.model(TableInfo.fromJson));
+export const EndpointsTableType = new ModelTableType<EndpointInfo, EndpointInfoJson>(TableInfo.create(EndpointExtensionType, 'endpoints'), Serializer.model(EndpointInfo.fromJson));
 
 type CallFuture = {
     resolve: (data: any) => void;
@@ -60,7 +61,12 @@ export class EndpointExtension {
         this.endpointMap.set(type.info.key(), type);
     }
 
-    async call<Req, Res, ReqData, ResData>(endpoint: EndpointType<Req, Res, ReqData, ResData>, data: Req): Promise<Res> {
+    async call<Req, Res>(key: { name: string, app: string }, data: Req): Promise<Res> {
+        const info = new EndpointInfo(key.app, key.name);
+        return await this.invoke<Req, Res, any, any>(new JsonEndpointType(info), data);
+    }
+
+    async invoke<Req, Res, ReqData, ResData>(endpoint: EndpointType<Req, Res, ReqData, ResData>, data: Req): Promise<Res> {
         const json = endpoint.requestSerializer.serialize(data);
         try {
             const response = await this._call(endpoint, json);

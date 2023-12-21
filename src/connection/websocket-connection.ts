@@ -50,6 +50,18 @@ export class WebsocketConnection implements Connection {
         });
     }
 
+    proxy(url: string): string {
+        const protocol = this.address.secure ? 'https' : 'http';
+        const { host, port } = this.address;
+        return `${protocol}://${host}:${port}/proxy?url=${encodeURIComponent(url)}`;
+    }
+
+    asset(url: string): string {
+        const protocol = this.address.secure ? 'https' : 'http';
+        const { host, port } = this.address;
+        return `${protocol}://${host}:${port}/assets?path=${encodeURIComponent(url)}`;
+    }
+
     disconnect(): void {
         if (this.socket) {
             this.socket.close();

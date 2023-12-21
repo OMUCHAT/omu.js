@@ -8,7 +8,7 @@ export interface EndpointType<Req = unknown, Res = unknown, ReqData = unknown, R
     responseSerializer: Serializable<Res, ResData>;
 }
 
-export class ClientEndpointType<Req = unknown, Res = unknown> implements EndpointType<Req, Res, any, any> {
+export class SerializeEndpointType<Req = unknown, Res = unknown> implements EndpointType<Req, Res, any, any> {
     public info: EndpointInfo;
     public requestSerializer: Serializable<Req, any>;
     public responseSerializer: Serializable<Res, any>;
@@ -17,5 +17,17 @@ export class ClientEndpointType<Req = unknown, Res = unknown> implements Endpoin
         this.info = info;
         this.requestSerializer = requestSerializer ?? Serializer.noop();
         this.responseSerializer = responseSerializer ?? Serializer.noop();
+    }
+}
+
+export class JsonEndpointType<Req = unknown, Res = unknown> implements EndpointType<Req, Res, any, any> {
+    public info: EndpointInfo;
+    public requestSerializer: Serializable<Req, any>;
+    public responseSerializer: Serializable<Res, any>;
+
+    constructor(info: EndpointInfo) {
+        this.info = info;
+        this.requestSerializer = Serializer.noop();
+        this.responseSerializer = Serializer.noop();
     }
 }
