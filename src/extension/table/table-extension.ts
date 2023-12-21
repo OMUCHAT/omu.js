@@ -1,5 +1,4 @@
-import type { Client } from 'src/client';
-
+import type { Client } from '../../client';
 import { ExtensionEventType } from '../../event';
 import { Serializer, type Keyable } from '../../interface';
 import { SerializeEndpointType } from '../endpoint';
@@ -8,7 +7,6 @@ import type { Extension, ExtensionType } from '../extension';
 import { defineExtensionType } from '../extension';
 import { ExtensionInfo } from '../server/model/extension-info';
 
-import type { TableInfoJson } from './model/table-info';
 import { TableInfo } from './model/table-info';
 import type { Table, TableListener, TableType } from './table';
 import { ModelTableType } from './table';
@@ -17,7 +15,7 @@ export const TableExtensionType: ExtensionType<TableExtension> = defineExtension
 type TableEventData = { type: string; }
 type TableItemsEventData = TableEventData & { items: Record<string, any> };
 type TableProxyEventData = TableEventData & { items: Record<string, any>, key: number };
-export const TableRegisterEvent = new ExtensionEventType<TableInfo>(TableExtensionType, 'register', Serializer.model(TableInfo.fromJson));
+export const TableRegisterEvent = new ExtensionEventType<TableInfo>(TableExtensionType, 'register', Serializer.model(TableInfo));
 export const TableListenEvent = new ExtensionEventType<string>(TableExtensionType, 'listen', Serializer.noop());
 export const TableProxyListenEvent = new ExtensionEventType<string>(TableExtensionType, 'proxy_listen', Serializer.noop());
 export const TableProxyEvent = new ExtensionEventType<TableProxyEventData>(TableExtensionType, 'proxy', Serializer.noop());
@@ -30,7 +28,7 @@ export const TableItemClearEvent = new ExtensionEventType<TableEventData>(TableE
 export const TableItemGetEndpoint = new SerializeEndpointType<TableEventData & { items: string[] }, Record<string, any>>(EndpointInfo.create(TableExtensionType, 'item_get'));
 export const TableItemFetchEndpoint = new SerializeEndpointType<TableEventData & { limit: number, cursor?: string }, Record<string, any>>(EndpointInfo.create(TableExtensionType, 'item_fetch'));
 export const TableItemSizeEndpoint = new SerializeEndpointType<TableEventData, number>(EndpointInfo.create(TableExtensionType, 'item_size'));
-export const TablesTableType = new ModelTableType<TableInfo, TableInfoJson>(TableInfo.create(TableExtensionType, 'tables'), Serializer.model(TableInfo.fromJson));
+export const TablesTableType = new ModelTableType(TableInfo.ofExtension(TableExtensionType, 'tables'), TableInfo);
 
 export class TableExtension implements Extension {
     private readonly tableMap: Map<string, Table<any>>;
@@ -72,6 +70,8 @@ class TableImpl<T extends Keyable> implements Table<T> {
     private readonly proxies: Array<(item: T) => T | null>;
     private readonly key: string;
     private listening: boolean;
+    private cacheSize?: number;
+
     constructor(
         private readonly client: Client,
         private readonly type: TableType<T>,
@@ -155,12 +155,10 @@ class TableImpl<T extends Keyable> implements Table<T> {
     }
 
     private updateCache(items: Map<string, T>): void {
-        if (typeof this.info.cacheSize === 'undefined') {
+        if (!this.cacheSize) {
             this.cache = new Map([...this.cache, ...items]);
         } else {
-            const newCache = new Map([...this.cache, ...items]);
-            const cacheSize = this.info.cacheSize;
-            const cache = new Map([...newCache.entries()].slice(-cacheSize));
+            const cache = new Map([...this.cache, ...items].slice(-this.cacheSize));
             this.cache = cache;
         }
         this.listeners.forEach((listener) => {
@@ -304,5 +302,9 @@ class TableImpl<T extends Keyable> implements Table<T> {
             this.cache.set(key, item);
             return [key, item];
         }));
+    }
+
+    setCacheSize(size: number): void {
+        this.cacheSize = size;
     }
 }

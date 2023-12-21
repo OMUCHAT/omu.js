@@ -1,5 +1,6 @@
-import type { Keyable } from 'src/interface/keyable';
-import type { Serializable } from 'src/interface/serializable';
+import type { Model } from '../../interface';
+import type { Keyable } from '../../interface/keyable';
+import { Serializer, type Serializable } from '../../interface/serializable';
 
 import type { TableInfo } from './model/table-info';
 
@@ -37,9 +38,15 @@ export interface TableType<T extends Keyable, D = unknown> {
     serializer: Serializable<T, D>;
 }
 
-export class ModelTableType<T extends Keyable, D = unknown> implements TableType<T, D> {
+export class ModelTableType<T extends Keyable & Model<D>, D = unknown> implements TableType<T, D> {
+    public readonly info: TableInfo;
+    public readonly serializer: Serializable<T, D>;
+
     constructor(
-        public readonly info: TableInfo,
-        public readonly serializer: Serializable<T, D>,
-    ) {}
+        info: TableInfo,
+        model: { fromJson(data: D): T },
+    ) {
+        this.info = info;
+        this.serializer = Serializer.model(model);
+    }
 }

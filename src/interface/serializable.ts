@@ -15,8 +15,8 @@ export class Serializer<T, D> {
         return new Serializer<T, T>((data) => data, (data) => data);
     }
 
-    static model<M extends Model<D>, D>(model: (data: D) => M): Serializable<M, D> {
-        return new Serializer<M, D>((data) => data.json(), model);
+    static model<M extends Model<D>, D>(model: { fromJson(data: D): M }): Serializable<M, D> {
+        return new Serializer<M, D>((data) => data.json(), model.fromJson);
     }
 
     static array<T, D>(serializer: Serializable<T, D>): Serializable<T[], D[]> {

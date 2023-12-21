@@ -1,5 +1,4 @@
-import type { Keyable } from 'src/interface/keyable';
-import type { Model } from 'src/interface/model';
+import type { Keyable, Model } from '../../../interface';
 
 export interface AppJson {
     name: string;

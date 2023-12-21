@@ -1,6 +1,5 @@
-import type { Client } from 'src/client';
-import type { ConnectionListener } from 'src/connection';
-
+import type { Client } from '../../client';
+import type { ConnectionListener } from '../../connection';
 import { ExtensionEventType } from '../../event';
 import { Serializer } from '../../interface';
 import { SerializeEndpointType } from '../endpoint';

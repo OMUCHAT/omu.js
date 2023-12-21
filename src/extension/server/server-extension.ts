@@ -1,5 +1,4 @@
 import type { Client, ClientListener } from '../../client';
-import { Serializer } from '../../interface/serializable';
 import { defineExtensionType, type Extension, type ExtensionType } from '../extension';
 import { ModelTableType, TableExtensionType, type Table } from '../table';
 import { TableInfo } from '../table/model/table-info';
@@ -10,8 +9,8 @@ import { ExtensionInfo } from './model/extension-info';
 
 export const ServerExtensionType: ExtensionType<ServerExtension> = defineExtensionType(ExtensionInfo.create('server'), (client: Client) => new ServerExtension(client), () => [TableExtensionType]);
 
-const AppsTableKey = new ModelTableType<App, AppJson>(TableInfo.create(ServerExtensionType, 'apps'), Serializer.model(App.fromJson));
-const ExtensionsTableType = new ModelTableType<ExtensionInfo, ExtensionInfoJson>(TableInfo.create(ServerExtensionType, 'extensions'), Serializer.model(ExtensionInfo.fromJson));
+const AppsTableKey = new ModelTableType<App, AppJson>(TableInfo.ofExtension(ServerExtensionType, 'apps'), App);
+const ExtensionsTableType = new ModelTableType<ExtensionInfo, ExtensionInfoJson>(TableInfo.ofExtension(ServerExtensionType, 'extensions'), ExtensionInfo);
 
 export class ServerExtension implements Extension, ClientListener {
     apps: Table<App>;

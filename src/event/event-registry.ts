@@ -1,7 +1,5 @@
 
-import type { Client } from 'src/client';
-
-import type { AppJson } from '../extension';
+import type { Client } from '../client';
 import { App } from '../extension';
 import type { Serializable } from '../interface/serializable';
 import { Serializer } from '../interface/serializable';
@@ -81,6 +79,6 @@ function defineEvent<T, D>(type: string, serializer: Serializable<T, D>): EventT
 }
 
 export const EVENTS = {
-    Connect: defineEvent<App, AppJson>('connect', Serializer.model(App.fromJson)),
+    Connect: defineEvent('connect', Serializer.model(App)),
     Ready: defineEvent<undefined, undefined>('ready', Serializer.noop()),
 };

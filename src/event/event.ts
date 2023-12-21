@@ -1,6 +1,5 @@
-import type { Client } from 'src/client';
-import type { ExtensionType } from 'src/extension';
-
+import type { Client } from '../client';
+import type { ExtensionType } from '../extension';
 import type { Serializable } from '../interface';
 
 export interface EventJson<T = any> {

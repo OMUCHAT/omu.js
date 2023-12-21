@@ -1,5 +1,4 @@
-import type { Client } from 'src/client';
-
+import type { Client } from '../../client';
 import { ExtensionEventType } from '../../event';
 import { Serializer } from '../../interface';
 import { defineExtensionType, type ExtensionType } from '../extension';
@@ -8,12 +7,11 @@ import type { Table } from '../table';
 import { ModelTableType, TableInfo } from '../table';
 
 import { JsonEndpointType, type EndpointType } from './endpoint';
-import type { EndpointInfoJson } from './model';
 import { EndpointInfo } from './model';
 
 export const EndpointExtensionType: ExtensionType<EndpointExtension> = defineExtensionType(ExtensionInfo.create('endpoint'), (client: Client) => new EndpointExtension(client), () => []);
 
-export const EndpointRegisterEvent = new ExtensionEventType<EndpointInfo>(EndpointExtensionType, 'register', Serializer.model(EndpointInfo.fromJson));
+export const EndpointRegisterEvent = new ExtensionEventType<EndpointInfo>(EndpointExtensionType, 'register', Serializer.model(EndpointInfo));
 type EndpointEvent = {
     type: string;
     key: number;
@@ -21,7 +19,7 @@ type EndpointEvent = {
 export const EndpointCallEvent = new ExtensionEventType<EndpointEvent & { data: any }>(EndpointExtensionType, 'call', Serializer.noop());
 export const EndpointReceiveEvent = new ExtensionEventType<EndpointEvent & { data: any }>(EndpointExtensionType, 'receive', Serializer.noop());
 export const EndpointErrorEvent = new ExtensionEventType<EndpointEvent & { error: string }>(EndpointExtensionType, 'error', Serializer.noop());
-export const EndpointsTableType = new ModelTableType<EndpointInfo, EndpointInfoJson>(TableInfo.create(EndpointExtensionType, 'endpoints'), Serializer.model(EndpointInfo.fromJson));
+export const EndpointsTableType = new ModelTableType(TableInfo.ofExtension(EndpointExtensionType, 'endpoints'), EndpointInfo);
 
 type CallFuture = {
     resolve: (data: any) => void;
