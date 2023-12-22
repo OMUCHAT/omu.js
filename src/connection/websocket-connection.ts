@@ -8,6 +8,7 @@ export class WebsocketConnection implements Connection {
     readonly address: Address;
     private readonly listeners: ConnectionListener[] = [];
     private socket: WebSocket | null;
+    private tasks: (() => void)[] = [];
 
     constructor(address: Address) {
         this.address = address;
@@ -32,6 +33,7 @@ export class WebsocketConnection implements Connection {
             listener.onConnect?.();
             listener.onStatusChanged?.('connected');
         });
+        this.tasks.forEach((task) => task());
     }
 
     private onClose(): void {
@@ -111,12 +113,17 @@ export class WebsocketConnection implements Connection {
         this.listeners.splice(this.listeners.indexOf(listener), 1);
     }
 
-    once(listener: () => void): void {
-        if (this.connected) {
-            listener();
+    addTask(task: () => void): void {
+        if (this.tasks.includes(task)) {
+            throw new Error('Task already registered');
         }
-        this.addListener({
-            onConnect: listener,
-        });
+        this.tasks.push(task);
+        if (this.connected) {
+            task();
+        }
+    }
+
+    removeTask(task: () => void): void {
+        this.tasks.splice(this.tasks.indexOf(task), 1);
     }
 }

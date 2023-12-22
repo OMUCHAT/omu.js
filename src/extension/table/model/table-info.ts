@@ -1,20 +1,31 @@
 import type { Keyable, Model } from '../../../interface';
 import type { ExtensionType } from '../../extension';
+import type { App } from '../../server';
 
 export interface TableInfoJson {
     owner: string;
     name: string;
     description?: string;
+    use_database?: boolean;
+    cache?: boolean;
+    cache_size?: number;
 }
 
 export class TableInfo implements Keyable, Model<TableInfoJson> {
     public owner: string;
     public name: string;
     public description?: string;
+    public useDatabase?: boolean;
+    public cache?: boolean;
+    public cacheSize?: number;
+
     constructor({
         owner,
         name,
         description,
+        useDatabase,
+        cache,
+        cacheSize,
     }: {
         owner: string;
         name: string;
@@ -26,6 +37,9 @@ export class TableInfo implements Keyable, Model<TableInfoJson> {
         this.owner = owner;
         this.name = name;
         this.description = description;
+        this.useDatabase = useDatabase;
+        this.cache = cache;
+        this.cacheSize = cacheSize;
     }
 
     static fromJson(json: TableInfoJson): TableInfo {
@@ -40,6 +54,13 @@ export class TableInfo implements Keyable, Model<TableInfoJson> {
         });
     }
 
+    static of(app: App, name: string): TableInfo {
+        return new TableInfo({
+            owner: app.key(),
+            name,
+        });
+    }
+
     key(): string {
         return `${this.owner}:${this.name}`;
     }
@@ -49,6 +70,9 @@ export class TableInfo implements Keyable, Model<TableInfoJson> {
             owner: this.owner,
             name: this.name,
             description: this.description,
+            use_database: this.useDatabase,
+            cache: this.cache,
+            cache_size: this.cacheSize,
         };
     }
 }

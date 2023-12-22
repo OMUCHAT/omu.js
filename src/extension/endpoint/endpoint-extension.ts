@@ -1,25 +1,43 @@
 import type { Client } from '../../client';
-import { ExtensionEventType } from '../../event';
-import { Serializer } from '../../interface';
-import { defineExtensionType, type ExtensionType } from '../extension';
+import { JsonEventType } from '../../event';
+import { defineExtensionType } from '../extension';
 import { ExtensionInfo } from '../server';
 import type { Table } from '../table';
-import { ModelTableType, TableInfo } from '../table';
+import { ModelTableType } from '../table';
 
 import { JsonEndpointType, type EndpointType } from './endpoint';
 import { EndpointInfo } from './model';
 
-export const EndpointExtensionType: ExtensionType<EndpointExtension> = defineExtensionType(ExtensionInfo.create('endpoint'), (client: Client) => new EndpointExtension(client), () => []);
+export const EndpointExtensionType = defineExtensionType({
+    info: ExtensionInfo.create('endpoint'),
+    create: (client: Client) => new EndpointExtension(client),
+});
 
-export const EndpointRegisterEvent = new ExtensionEventType<EndpointInfo>(EndpointExtensionType, 'register', Serializer.model(EndpointInfo));
+export const EndpointRegisterEvent = JsonEventType.ofExtension<EndpointInfo>({
+    extension: EndpointExtensionType,
+    name: 'register',
+});
 type EndpointEvent = {
     type: string;
     key: number;
 }
-export const EndpointCallEvent = new ExtensionEventType<EndpointEvent & { data: any }>(EndpointExtensionType, 'call', Serializer.noop());
-export const EndpointReceiveEvent = new ExtensionEventType<EndpointEvent & { data: any }>(EndpointExtensionType, 'receive', Serializer.noop());
-export const EndpointErrorEvent = new ExtensionEventType<EndpointEvent & { error: string }>(EndpointExtensionType, 'error', Serializer.noop());
-export const EndpointsTableType = new ModelTableType(TableInfo.ofExtension(EndpointExtensionType, 'endpoints'), EndpointInfo);
+export const EndpointCallEvent = JsonEventType.ofExtension<EndpointEvent & { data: any }>({
+    extension: EndpointExtensionType,
+    name: 'call',
+});
+export const EndpointReceiveEvent = JsonEventType.ofExtension<EndpointEvent & { data: any }>({
+    extension: EndpointExtensionType,
+    name: 'receive',
+});
+export const EndpointErrorEvent = JsonEventType.ofExtension<EndpointEvent & { error: string }>({
+    extension: EndpointExtensionType,
+    name: 'error',
+});
+export const EndpointsTableType = ModelTableType.ofExtension({
+    extension: EndpointExtensionType,
+    name: 'endpoints',
+    model: EndpointInfo,
+});
 
 type CallFuture = {
     resolve: (data: any) => void;
@@ -53,10 +71,10 @@ export class EndpointExtension {
     }
 
     register<Req, Res, ReqData, ResData>(type: EndpointType<Req, Res, ReqData, ResData>): void {
-        if (this.endpointMap.has(type.info.key())) {
-            throw new Error(`Endpoint for key ${type.info.key()} already registered`);
+        if (this.endpointMap.has(type.type)) {
+            throw new Error(`Endpoint for key ${type.type} already registered`);
         }
-        this.endpointMap.set(type.info.key(), type);
+        this.endpointMap.set(type.type, type);
     }
 
     async call<Req, Res>(key: { name: string, app: string }, data: Req): Promise<Res> {
@@ -70,7 +88,7 @@ export class EndpointExtension {
             const response = await this._call(endpoint, json);
             return endpoint.responseSerializer.deserialize(response);
         } catch (e) {
-            throw new Error(`Failed to execute endpoint ${endpoint.info.key()}: ${e}`);
+            throw new Error(`Failed to execute endpoint ${endpoint.type}: ${e}`);
         }
     }
 
@@ -79,7 +97,7 @@ export class EndpointExtension {
         const promise = new Promise<ResData>((resolve, reject) => {
             this.promiseMap.set(key, { resolve, reject });
         });
-        this.client.send(EndpointCallEvent, { type: endpoint.info.key(), key, data });
+        this.client.send(EndpointCallEvent, { type: endpoint.type, key, data });
         return promise;
     }
 }

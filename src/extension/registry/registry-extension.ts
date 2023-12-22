@@ -1,17 +1,27 @@
 import type { Client } from '../../client';
 import type { ConnectionListener } from '../../connection';
-import { ExtensionEventType } from '../../event';
-import { Serializer } from '../../interface';
-import { SerializeEndpointType } from '../endpoint';
-import { EndpointInfo } from '../endpoint/model';
-import type { Extension, ExtensionType } from '../extension';
+import { JsonEventType } from '../../event';
+import { JsonEndpointType } from '../endpoint/endpoint';
+import type { Extension } from '../extension';
 import { defineExtensionType } from '../extension';
 import { ExtensionInfo } from '../server/model/extension-info';
 
-export const RegistryExtensionType: ExtensionType<RegistryExtension> = defineExtensionType(ExtensionInfo.create('registry'), (client: Client) => new RegistryExtension(client));
-export const RegistryUpdateEvent = new ExtensionEventType<{ key: string, value: any }>(RegistryExtensionType, 'update', Serializer.noop());
-export const RegistryListenEvent = new ExtensionEventType<string>(RegistryExtensionType, 'listen', Serializer.noop());
-export const RegistryGetEndpoint = new SerializeEndpointType<string, any>(EndpointInfo.create(RegistryExtensionType, 'get'));
+export const RegistryExtensionType = defineExtensionType({
+    info: ExtensionInfo.create('registry'),
+    create: (client: Client) => new RegistryExtension(client),
+});
+export const RegistryUpdateEvent = JsonEventType.ofExtension<{ key: string, value: any }>({
+    extension: RegistryExtensionType,
+    name: 'update',
+});
+export const RegistryListenEvent = JsonEventType.ofExtension<string>({
+    extension: RegistryExtensionType,
+    name: 'listen',
+});
+export const RegistryGetEndpoint = JsonEndpointType.ofExtension<string, any>({
+    extension: RegistryExtensionType,
+    name: 'get',
+});
 
 type Key = { name: string, app?: string };
 

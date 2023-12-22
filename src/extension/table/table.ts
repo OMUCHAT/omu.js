@@ -1,8 +1,10 @@
 import type { Model } from '../../interface';
 import type { Keyable } from '../../interface/keyable';
 import { Serializer, type Serializable } from '../../interface/serializable';
+import type { ExtensionType } from '../extension';
+import type { App } from '../server';
 
-import type { TableInfo } from './model/table-info';
+import { TableInfo } from './model/table-info';
 
 export interface Table<T extends Keyable> {
     readonly info: TableInfo;
@@ -14,15 +16,17 @@ export interface Table<T extends Keyable> {
     remove(...items: T[]): Promise<void>;
     clear(): Promise<void>;
 
-    fetch(limit: number, cursor?: string): Promise<Map<string, T>>;
-    iter(): AsyncIterator<T>;
+    fetch({ before, after, cursor }: { before?: number, after?: number, cursor?: string }): Promise<Map<string, T>>;
+    iter({ backward, cursor }: { backward?: boolean, cursor?: string }): AsyncIterable<T>;
     size(): Promise<number>;
 
     addListener(listener: TableListener<T>): void;
     removeListener(listener: TableListener<T>): void;
-    listen(listener?: (items: Map<string, T>) => void): () => void;
+    listen(listener?: (items: Map<string, T>) => void): void;
+    unlisten(listener?: (items: Map<string, T>) => void): void;
 
     proxy(proxy: (item: T) => T | null): () => void;
+    setCacheSize(size: number): void;
 }
 
 export interface TableListener<T extends Keyable> {
@@ -35,18 +39,45 @@ export interface TableListener<T extends Keyable> {
 
 export interface TableType<T extends Keyable, D = unknown> {
     info: TableInfo;
+    key: string;
     serializer: Serializable<T, D>;
 }
 
 export class ModelTableType<T extends Keyable & Model<D>, D = unknown> implements TableType<T, D> {
     public readonly info: TableInfo;
+    public readonly key: string;
     public readonly serializer: Serializable<T, D>;
 
-    constructor(
+    private constructor(
         info: TableInfo,
         model: { fromJson(data: D): T },
     ) {
         this.info = info;
+        this.key = info.key();
         this.serializer = Serializer.model(model);
+    }
+
+    static of<T extends Keyable & Model<D>, D = unknown>({
+        app,
+        name,
+        model,
+    }: {
+        app: App;
+        name: string;
+        model: { fromJson(data: D): T };
+    }): ModelTableType<T, D> {
+        return new ModelTableType<T, D>(TableInfo.of(app, name), model);
+    }
+
+    static ofExtension<T extends Keyable & Model<D>, D = unknown>({
+        extension,
+        name,
+        model,
+    }: {
+        extension: ExtensionType;
+        name: string;
+        model: { fromJson(data: D): T };
+    }): ModelTableType<T, D> {
+        return new ModelTableType<T, D>(TableInfo.ofExtension(extension, name), model);
     }
 }

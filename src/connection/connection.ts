@@ -19,7 +19,8 @@ export interface Connection extends ClientListener {
 
     addListener(listener: ConnectionListener): void;
     removeListener(listener: ConnectionListener): void;
-    once(listener: () => void): void;
+    addTask(task: () => void): void;
+    removeTask(task: () => void): void;
 }
 
 export interface ConnectionListener {
