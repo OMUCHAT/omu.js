@@ -46,18 +46,49 @@ export class TableInfo implements Keyable, Model<TableInfoJson> {
         return new TableInfo(json);
     }
 
-    static ofExtension(extensionType: ExtensionType, name: string, description?: string): TableInfo {
+    static ofExtension(extensionType: ExtensionType, {
+        name,
+        description,
+        useDatabase,
+        cache,
+        cacheSize,
+    }: {
+        name: string;
+        description?: string;
+        useDatabase?: boolean;
+        cache?: boolean;
+        cacheSize?: number;
+    }): TableInfo {
         return new TableInfo({
             owner: extensionType.info.key(),
             name,
             description,
+            useDatabase,
+            cache,
+            cacheSize,
         });
     }
 
-    static of(app: App, name: string): TableInfo {
+    static of(app: App, {
+        name,
+        description,
+        useDatabase,
+        cache,
+        cacheSize,
+    }: {
+        name: string;
+        description?: string;
+        useDatabase?: boolean;
+        cache?: boolean;
+        cacheSize?: number;
+    }): TableInfo {
         return new TableInfo({
             owner: app.key(),
             name,
+            description,
+            useDatabase,
+            cache,
+            cacheSize,
         });
     }
 

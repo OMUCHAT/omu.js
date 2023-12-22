@@ -23,53 +23,41 @@ export const TableRegisterEvent = SerializeEventType.ofExtension<TableInfo, Tabl
     name: 'register',
     serializer: Serializer.model(TableInfo),
 });
-export const TableListenEvent = JsonEventType.ofExtension<string>({
-    extension: TableExtensionType,
+export const TableListenEvent = JsonEventType.ofExtension<string>(TableExtensionType, {
     name: 'listen',
 });
-export const TableProxyListenEvent = JsonEventType.ofExtension<string>({
-    extension: TableExtensionType,
+export const TableProxyListenEvent = JsonEventType.ofExtension<string>(TableExtensionType, {
     name: 'proxy_listen',
 });
-export const TableProxyEvent = JsonEventType.ofExtension<TableProxyEventData>({
-    extension: TableExtensionType,
+export const TableProxyEvent = JsonEventType.ofExtension<TableProxyEventData>(TableExtensionType, {
     name: 'proxy',
 });
-export const TableProxyEndpoint = JsonEndpointType.ofExtension<TableProxyEventData, void>({
-    extension: TableExtensionType,
+export const TableProxyEndpoint = JsonEndpointType.ofExtension<TableProxyEventData, void>(TableExtensionType, {
     name: 'proxy',
 });
 
-export const TableItemAddEvent = JsonEventType.ofExtension<TableItemsEventData>({
-    extension: TableExtensionType,
+export const TableItemAddEvent = JsonEventType.ofExtension<TableItemsEventData>(TableExtensionType, {
     name: 'item_add',
 });
-export const TableItemUpdateEvent = JsonEventType.ofExtension<TableItemsEventData>({
-    extension: TableExtensionType,
+export const TableItemUpdateEvent = JsonEventType.ofExtension<TableItemsEventData>(TableExtensionType, {
     name: 'item_update',
 });
-export const TableItemRemoveEvent = JsonEventType.ofExtension<TableItemsEventData>({
-    extension: TableExtensionType,
+export const TableItemRemoveEvent = JsonEventType.ofExtension<TableItemsEventData>(TableExtensionType, {
     name: 'item_remove',
 });
-export const TableItemClearEvent = JsonEventType.ofExtension<TableEventData>({
-    extension: TableExtensionType,
+export const TableItemClearEvent = JsonEventType.ofExtension<TableEventData>(TableExtensionType, {
     name: 'item_clear',
 });
-export const TableItemGetEndpoint = JsonEndpointType.ofExtension<TableEventData & { items: string[] }, Record<string, any>>({
-    extension: TableExtensionType,
+export const TableItemGetEndpoint = JsonEndpointType.ofExtension<TableEventData & { items: string[] }, Record<string, any>>(TableExtensionType, {
     name: 'item_get',
 });
-export const TableItemFetchEndpoint = JsonEndpointType.ofExtension<TableEventData & { before?: number, after?: number, cursor?: string }, Record<string, any>>({
-    extension: TableExtensionType,
+export const TableItemFetchEndpoint = JsonEndpointType.ofExtension<TableEventData & { before?: number, after?: number, cursor?: string }, Record<string, any>>(TableExtensionType, {
     name: 'item_fetch',
 });
-export const TableItemSizeEndpoint = JsonEndpointType.ofExtension<TableEventData, number>({
-    extension: TableExtensionType,
+export const TableItemSizeEndpoint = JsonEndpointType.ofExtension<TableEventData, number>(TableExtensionType, {
     name: 'item_size',
 });
-export const TablesTableType = ModelTableType.ofExtension({
-    extension: TableExtensionType,
+export const TablesTableType = ModelTableType.ofExtension(TableExtensionType, {
     name: 'tables',
     model: TableInfo,
 });

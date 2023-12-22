@@ -10,16 +10,13 @@ export const RegistryExtensionType = defineExtensionType({
     info: ExtensionInfo.create('registry'),
     create: (client: Client) => new RegistryExtension(client),
 });
-export const RegistryUpdateEvent = JsonEventType.ofExtension<{ key: string, value: any }>({
-    extension: RegistryExtensionType,
+export const RegistryUpdateEvent = JsonEventType.ofExtension<{ key: string, value: any }>(RegistryExtensionType, {
     name: 'update',
 });
-export const RegistryListenEvent = JsonEventType.ofExtension<string>({
-    extension: RegistryExtensionType,
+export const RegistryListenEvent = JsonEventType.ofExtension<string>(RegistryExtensionType, {
     name: 'listen',
 });
-export const RegistryGetEndpoint = JsonEndpointType.ofExtension<string, any>({
-    extension: RegistryExtensionType,
+export const RegistryGetEndpoint = JsonEndpointType.ofExtension<string, any>(RegistryExtensionType, {
     name: 'get',
 });
 

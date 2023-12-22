@@ -13,28 +13,23 @@ export const EndpointExtensionType = defineExtensionType({
     create: (client: Client) => new EndpointExtension(client),
 });
 
-export const EndpointRegisterEvent = JsonEventType.ofExtension<EndpointInfo>({
-    extension: EndpointExtensionType,
+export const EndpointRegisterEvent = JsonEventType.ofExtension<EndpointInfo>(EndpointExtensionType, {
     name: 'register',
 });
 type EndpointEvent = {
     type: string;
     key: number;
 }
-export const EndpointCallEvent = JsonEventType.ofExtension<EndpointEvent & { data: any }>({
-    extension: EndpointExtensionType,
+export const EndpointCallEvent = JsonEventType.ofExtension<EndpointEvent & { data: any }>(EndpointExtensionType, {
     name: 'call',
 });
-export const EndpointReceiveEvent = JsonEventType.ofExtension<EndpointEvent & { data: any }>({
-    extension: EndpointExtensionType,
+export const EndpointReceiveEvent = JsonEventType.ofExtension<EndpointEvent & { data: any }>(EndpointExtensionType, {
     name: 'receive',
 });
-export const EndpointErrorEvent = JsonEventType.ofExtension<EndpointEvent & { error: string }>({
-    extension: EndpointExtensionType,
+export const EndpointErrorEvent = JsonEventType.ofExtension<EndpointEvent & { error: string }>(EndpointExtensionType, {
     name: 'error',
 });
-export const EndpointsTableType = ModelTableType.ofExtension({
-    extension: EndpointExtensionType,
+export const EndpointsTableType = ModelTableType.ofExtension(EndpointExtensionType, {
     name: 'endpoints',
     model: EndpointInfo,
 });

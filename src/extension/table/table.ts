@@ -66,18 +66,16 @@ export class ModelTableType<T extends Keyable & Model<D>, D = unknown> implement
         name: string;
         model: { fromJson(data: D): T };
     }): ModelTableType<T, D> {
-        return new ModelTableType<T, D>(TableInfo.of(app, name), model);
+        return new ModelTableType<T, D>(TableInfo.of(app, { name }), model);
     }
 
-    static ofExtension<T extends Keyable & Model<D>, D = unknown>({
-        extension,
+    static ofExtension<T extends Keyable & Model<D>, D = unknown>(extension: ExtensionType, {
         name,
         model,
     }: {
-        extension: ExtensionType;
         name: string;
         model: { fromJson(data: D): T };
     }): ModelTableType<T, D> {
-        return new ModelTableType<T, D>(TableInfo.ofExtension(extension, name), model);
+        return new ModelTableType<T, D>(TableInfo.ofExtension(extension, { name }), model);
     }
 }

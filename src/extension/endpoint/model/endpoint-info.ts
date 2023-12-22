@@ -2,20 +2,20 @@ import type { Keyable, Model } from '../../../interface';
 import type { ExtensionType } from '../../extension';
 
 export interface EndpointInfoJson {
-    app: string;
+    owner: string;
     name: string;
     description?: string;
 }
 
 export class EndpointInfo implements Keyable, Model<EndpointInfoJson> {
     constructor(
-        public app: string,
+        public owner: string,
         public name: string,
         public description?: string,
     ) {}
 
     static fromJson(json: EndpointInfoJson): EndpointInfo {
-        return new EndpointInfo(json.app, json.name, json.description);
+        return new EndpointInfo(json.owner, json.name, json.description);
     }
 
     static create(extensionType: ExtensionType, name: string, description?: string): EndpointInfo {
@@ -23,12 +23,12 @@ export class EndpointInfo implements Keyable, Model<EndpointInfoJson> {
     }
 
     key(): string {
-        return `${this.app}:${this.name}`;
+        return `${this.owner}:${this.name}`;
     }
 
     json(): EndpointInfoJson {
         return {
-            app: this.app,
+            owner: this.owner,
             name: this.name,
             description: this.description,
         };

@@ -82,21 +82,17 @@ export class JsonEndpointType<Req = unknown, Res = unknown> implements EndpointT
         this.responseSerializer = Serializer.noop();
     }
 
-    static of<Req, Res>({
-        app,
+    static of<Req, Res>(app: App, {
         name,
     }: {
-        app: App;
         name: string;
     }): JsonEndpointType<Req, Res> {
         return new JsonEndpointType<Req, Res>(new EndpointInfo(app.key(), name));
     }
 
-    static ofExtension<Req, Res>({
-        extension,
+    static ofExtension<Req, Res>(extension: ExtensionType, {
         name,
     }: {
-        extension: ExtensionType;
         name: string;
     }): JsonEndpointType<Req, Res> {
         return new JsonEndpointType<Req, Res>(new EndpointInfo(extension.key, name));

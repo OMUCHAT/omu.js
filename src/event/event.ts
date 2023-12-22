@@ -31,11 +31,9 @@ export class JsonEventType<T> implements EventType<T, T> {
         return new JsonEventType<T>({ owner: app.key(), name });
     }
 
-    static ofExtension<T>({
-        extension,
+    static ofExtension<T>(extension: ExtensionType, {
         name,
     }: {
-        extension: ExtensionType;
         name: string;
     }): JsonEventType<T> {
         return new JsonEventType<T>({ owner: extension.key, name });
