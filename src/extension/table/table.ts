@@ -57,12 +57,10 @@ export class ModelTableType<T extends Keyable & Model<D>, D = unknown> implement
         this.serializer = Serializer.model(model);
     }
 
-    static of<T extends Keyable & Model<D>, D = unknown>({
-        app,
+    static of<T extends Keyable & Model<D>, D = unknown>(app: App, {
         name,
         model,
     }: {
-        app: App;
         name: string;
         model: { fromJson(data: D): T };
     }): ModelTableType<T, D> {

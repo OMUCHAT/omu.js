@@ -32,13 +32,11 @@ export class SerializeEndpointType<Req = unknown, Res = unknown> implements Endp
         this.responseSerializer = responseSerializer ?? Serializer.noop();
     }
 
-    static of<Req, Res, ReqData, ResData>({
-        app,
+    static of<Req, Res, ReqData, ResData>(app: App, {
         name,
         requestSerializer,
         responseSerializer,
     }: {
-        app: App;
         name: string;
         requestSerializer?: Serializable<Req, ReqData>;
         responseSerializer?: Serializable<Res, ResData>;
@@ -50,13 +48,11 @@ export class SerializeEndpointType<Req = unknown, Res = unknown> implements Endp
         });
     }
 
-    static ofExtension<Req, Res, ReqData, ResData>({
-        extension,
+    static ofExtension<Req, Res, ReqData, ResData>(extension: ExtensionType, {
         name,
         requestSerializer,
         responseSerializer,
     }: {
-        extension: ExtensionType;
         name: string;
         requestSerializer?: Serializable<Req, ReqData>;
         responseSerializer?: Serializable<Res, ResData>;

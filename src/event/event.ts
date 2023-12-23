@@ -27,7 +27,11 @@ export class JsonEventType<T> implements EventType<T, T> {
         this.serializer = Serializer.noop();
     }
 
-    static of<T>(app: App, name: string): JsonEventType<T> {
+    static of<T>(app: App, {
+        name,
+    }: {
+        name: string;
+    }): JsonEventType<T> {
         return new JsonEventType<T>({ owner: app.key(), name });
     }
 
