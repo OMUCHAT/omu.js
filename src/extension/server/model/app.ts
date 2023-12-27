@@ -43,7 +43,7 @@ export class App implements Keyable, Model<AppJson> {
         return `${this.group}/${this.name}`;
     }
 
-    json(): AppJson {
+    toJson(): AppJson {
         return {
             name: this.name,
             group: this.group,

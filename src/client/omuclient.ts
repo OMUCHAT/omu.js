@@ -1,8 +1,8 @@
 
 import { WebsocketConnection, type Address, type Connection, type ConnectionListener } from '../connection';
 import { EVENTS, createEventRegistry, type EventRegistry, type EventType } from '../event';
-import type { App, EndpointExtension, Extension, ExtensionRegistry, ExtensionType, RegistryExtension, ServerExtension, TableExtension } from '../extension';
-import { EndpointExtensionType, RegistryExtensionType, ServerExtensionType, TableExtensionType, createExtensionRegistry } from '../extension';
+import type { App, EndpointExtension, Extension, ExtensionRegistry, ExtensionType, MessageExtension, ServerExtension, TableExtension } from '../extension';
+import { EndpointExtensionType, MessageExtensionType, RegistryExtension, RegistryExtensionType, ServerExtensionType, TableExtensionType, createExtensionRegistry } from '../extension';
 
 import { type Client, type ClientListener } from './client';
 
@@ -15,6 +15,7 @@ export class OmuClient implements Client, ConnectionListener {
     readonly endpoints: EndpointExtension;
     readonly tables: TableExtension;
     readonly registry: RegistryExtension;
+    readonly message: MessageExtension;
     readonly server: ServerExtension;
     readonly listeners: ClientListener[];
     public running: boolean;
@@ -42,6 +43,7 @@ export class OmuClient implements Client, ConnectionListener {
         this.endpoints = this.extensions.register(EndpointExtensionType);
         this.server = this.extensions.register(ServerExtensionType);
         this.registry = this.extensions.register(RegistryExtensionType);
+        this.message = this.extensions.register(MessageExtensionType);
         if (extensions) {
             this.extensions.registerAll(extensions);
         }
@@ -51,6 +53,7 @@ export class OmuClient implements Client, ConnectionListener {
         this.listeners.forEach((listener) => {
             listener.onInitialized?.();
         });
+        RegistryExtension;
     }
 
     proxy(url: string): string {
@@ -63,6 +66,9 @@ export class OmuClient implements Client, ConnectionListener {
 
     onConnect(): void {
         this.send(EVENTS.Connect, this.app);
+        this.listeners.forEach((listener) => {
+            listener.onReady?.();
+        });
     }
 
     onDisconnect(): void {
@@ -90,6 +96,9 @@ export class OmuClient implements Client, ConnectionListener {
     }
 
     start(): void {
+        if (this.running) {
+            throw new Error('Client already running');
+        }
         this.running = true;
         this.listeners.forEach((listener) => {
             listener.onStarted?.();

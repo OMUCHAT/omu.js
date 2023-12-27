@@ -10,6 +10,9 @@ export class ExtensionInfo implements Keyable, Model<ExtensionInfoJson> {
         public name: string,
         public description?: string,
     ) {}
+    toString(): string {
+        throw new Error('Method not implemented.');
+    }
 
     static fromJson(json: ExtensionInfoJson): ExtensionInfo {
         return new ExtensionInfo(json.name, json.description);
@@ -23,7 +26,7 @@ export class ExtensionInfo implements Keyable, Model<ExtensionInfoJson> {
         return this.name;
     }
 
-    json(): ExtensionInfoJson {
+    toJson(): ExtensionInfoJson {
         return {
             name: this.name,
             description: this.description,

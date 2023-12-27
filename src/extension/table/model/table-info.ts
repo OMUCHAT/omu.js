@@ -41,6 +41,9 @@ export class TableInfo implements Keyable, Model<TableInfoJson> {
         this.cache = cache;
         this.cacheSize = cacheSize;
     }
+    toString(): string {
+        throw new Error('Method not implemented.');
+    }
 
     static fromJson(json: TableInfoJson): TableInfo {
         return new TableInfo(json);
@@ -96,7 +99,7 @@ export class TableInfo implements Keyable, Model<TableInfoJson> {
         return `${this.owner}:${this.name}`;
     }
 
-    json(): TableInfoJson {
+    toJson(): TableInfoJson {
         return {
             owner: this.owner,
             name: this.name,

@@ -13,6 +13,9 @@ export class EndpointInfo implements Keyable, Model<EndpointInfoJson> {
         public name: string,
         public description?: string,
     ) {}
+    toString(): string {
+        throw new Error('Method not implemented.');
+    }
 
     static fromJson(json: EndpointInfoJson): EndpointInfo {
         return new EndpointInfo(json.owner, json.name, json.description);
@@ -26,7 +29,7 @@ export class EndpointInfo implements Keyable, Model<EndpointInfoJson> {
         return `${this.owner}:${this.name}`;
     }
 
-    json(): EndpointInfoJson {
+    toJson(): EndpointInfoJson {
         return {
             owner: this.owner,
             name: this.name,
