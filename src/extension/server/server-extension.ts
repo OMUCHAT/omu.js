@@ -1,4 +1,5 @@
 import type { Client } from '../../client';
+import { JsonEndpointType } from '../endpoint/endpoint';
 import { defineExtensionType, type Extension, type ExtensionType } from '../extension';
 import { ModelTableType, TableExtensionType, type Table } from '../table';
 
@@ -19,14 +20,21 @@ const ExtensionsTableType = ModelTableType.ofExtension(ServerExtensionType, {
     name: 'extensions',
     model: ExtensionInfo,
 });
+const ShutdownEndpointType = JsonEndpointType.ofExtension<boolean, boolean>(ServerExtensionType, {
+    name: 'shutdown',
+});
 
 export class ServerExtension implements Extension {
     apps: Table<App>;
     extensions: Table<ExtensionInfo>;
 
-    constructor(client: Client) {
+    constructor(private readonly client: Client) {
         const listExtension = client.extensions.get(TableExtensionType);
         this.apps = listExtension.get(AppsTableKey);
         this.extensions = listExtension.get(ExtensionsTableType);
+    }
+
+    shutdown(restart?: boolean): Promise<boolean> {
+        return this.client.endpoints.invoke(ShutdownEndpointType, restart ?? false);
     }
 }

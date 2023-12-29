@@ -31,7 +31,7 @@ export interface Table<T extends Keyable> {
 
 export interface TableListener<T extends Keyable> {
     onAdd?(items: Map<string, T>): void;
-    onSet?(items: Map<string, T>): void;
+    onUpdate?(items: Map<string, T>): void;
     onRemove?(items: Map<string, T>): void;
     onClear?(): void;
     onCacheUpdate?(cache: Map<string, T>): void;

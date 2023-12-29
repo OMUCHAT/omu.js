@@ -73,7 +73,7 @@ export function createEventRegistry(client: Client): EventRegistry {
 
 function defineEvent<T, D>(type: string, serializer: Serializable<T, D>): EventType<T, D> {
     return {
-        type,
+        type: `:${type}`,
         serializer,
     };
 }

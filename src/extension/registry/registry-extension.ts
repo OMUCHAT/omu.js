@@ -44,10 +44,10 @@ export class RegistryExtension implements Extension, ConnectionListener {
         });
     }
 
-    listen<T>(key: Key, handler: (value: T) => void): () => void {
+    listen<T>(key: Key, handler: (value: T | undefined) => void): () => void {
         const keyString = `${key.app ?? this.client.app.key()}:${key.name}`;
         this.listenKeys.add(keyString);
-        const listener = (event: { key: string; value: any; }): void => {
+        const listener = (event: { key: string; value?: any; }): void => {
             if (event.key === keyString) {
                 handler(event.value);
             }

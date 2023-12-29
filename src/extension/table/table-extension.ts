@@ -158,7 +158,7 @@ class TableImpl<T extends Keyable> implements Table<T> {
             const items = this.parseItems(event.items);
             this.updateCache(items);
             this.listeners.forEach((listener) => {
-                listener.onSet?.(items);
+                listener.onUpdate?.(items);
             });
         });
         client.events.addListener(TableItemRemoveEvent, (event) => {

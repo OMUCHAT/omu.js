@@ -1,8 +1,8 @@
 
 import { WebsocketConnection, type Address, type Connection, type ConnectionListener } from '../connection';
 import { EVENTS, createEventRegistry, type EventRegistry, type EventType } from '../event';
-import type { App, EndpointExtension, Extension, ExtensionRegistry, ExtensionType, MessageExtension, ServerExtension, TableExtension } from '../extension';
-import { EndpointExtensionType, MessageExtensionType, RegistryExtension, RegistryExtensionType, ServerExtensionType, TableExtensionType, createExtensionRegistry } from '../extension';
+import type { App, EndpointExtension, Extension, ExtensionRegistry, ExtensionType, MessageExtension, RegistryExtension, ServerExtension, TableExtension } from '../extension';
+import { EndpointExtensionType, MessageExtensionType, RegistryExtensionType, ServerExtensionType, TableExtensionType, createExtensionRegistry } from '../extension';
 
 import { type Client, type ClientListener } from './client';
 
@@ -49,11 +49,14 @@ export class OmuClient implements Client, ConnectionListener {
         }
 
         this.addListener(this.connection);
-
+        this.events.addListener(EVENTS.Ready, () => {
+            this.listeners.forEach((listener) => {
+                listener.onReady?.();
+            });
+        });
         this.listeners.forEach((listener) => {
             listener.onInitialized?.();
         });
-        RegistryExtension;
     }
 
     proxy(url: string): string {
@@ -66,9 +69,6 @@ export class OmuClient implements Client, ConnectionListener {
 
     onConnect(): void {
         this.send(EVENTS.Connect, this.app);
-        this.listeners.forEach((listener) => {
-            listener.onReady?.();
-        });
     }
 
     onDisconnect(): void {
