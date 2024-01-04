@@ -1,6 +1,6 @@
-import { type Client } from '../client';
+import { type Client } from '../client/index.js';
 
-import type { ExtensionInfo } from './server/model/extension-info';
+import type { ExtensionInfo } from './server/model/extension-info.js';
 
 export interface Extension {
 }

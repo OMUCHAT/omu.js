@@ -1,10 +1,10 @@
 
-import { WebsocketConnection, type Address, type Connection, type ConnectionListener } from '../connection';
-import { EVENTS, createEventRegistry, type EventRegistry, type EventType } from '../event';
-import type { App, EndpointExtension, Extension, ExtensionRegistry, ExtensionType, MessageExtension, RegistryExtension, ServerExtension, TableExtension } from '../extension';
-import { EndpointExtensionType, MessageExtensionType, RegistryExtensionType, ServerExtensionType, TableExtensionType, createExtensionRegistry } from '../extension';
+import { WebsocketConnection, type Address, type Connection, type ConnectionListener } from '../connection/index.js';
+import { EVENTS, createEventRegistry, type EventRegistry, type EventType } from '../event/index.js';
+import type { App, EndpointExtension, Extension, ExtensionRegistry, ExtensionType, MessageExtension, RegistryExtension, ServerExtension, TableExtension } from '../extension/index.js';
+import { EndpointExtensionType, MessageExtensionType, RegistryExtensionType, ServerExtensionType, TableExtensionType, createExtensionRegistry } from '../extension/index.js';
 
-import { type Client, type ClientListener } from './client';
+import { type Client, type ClientListener } from './client.js';
 
 export class OmuClient implements Client, ConnectionListener {
     readonly app: App;
@@ -77,7 +77,7 @@ export class OmuClient implements Client, ConnectionListener {
         }
     }
 
-    send<T, D>(event: EventType<T, D>, data: T): void {
+    send<T>(event: EventType<T>, data: T): void {
         this.connection.send({
             type: event.type,
             data: event.serializer.serialize(data),

@@ -1,3 +1,3 @@
-export { SerializeEndpointType, type EndpointType } from './endpoint';
-export { EndpointCallEvent, EndpointExtension, EndpointExtensionType, EndpointRegisterEvent } from './endpoint-extension';
+export { EndpointCallEvent, EndpointExtension, EndpointExtensionType, EndpointRegisterEvent } from './endpoint-extension.js';
+export { SerializeEndpointType, type EndpointType } from './endpoint.js';
 

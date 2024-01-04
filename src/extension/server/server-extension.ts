@@ -1,10 +1,11 @@
-import type { Client } from '../../client';
-import { JsonEndpointType } from '../endpoint/endpoint';
-import { defineExtensionType, type Extension, type ExtensionType } from '../extension';
-import { ModelTableType, TableExtensionType, type Table } from '../table';
+import type { Client } from '../../client/index.js';
+import { Serializer } from '../../index.js';
+import { JsonEndpointType } from '../endpoint/endpoint.js';
+import { defineExtensionType, type Extension, type ExtensionType } from '../extension.js';
+import { ModelTableType, TableExtensionType, type Table } from '../table/index.js';
 
-import { App } from './model';
-import { ExtensionInfo } from './model/extension-info';
+import { ExtensionInfo } from './model/extension-info.js';
+import { App } from './model/index.js';
 
 export const ServerExtensionType: ExtensionType<ServerExtension> = defineExtensionType({
     info: ExtensionInfo.create('server'),
@@ -22,6 +23,8 @@ const ExtensionsTableType = ModelTableType.ofExtension(ServerExtensionType, {
 });
 const ShutdownEndpointType = JsonEndpointType.ofExtension<boolean, boolean>(ServerExtensionType, {
     name: 'shutdown',
+    requestSerializer: Serializer.json(),
+    responseSerializer: Serializer.json(),
 });
 
 export class ServerExtension implements Extension {

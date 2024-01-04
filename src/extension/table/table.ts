@@ -1,10 +1,9 @@
-import type { Model } from '../../interface';
-import type { Keyable } from '../../interface/keyable';
-import { Serializer, type Serializable } from '../../interface/serializable';
-import type { ExtensionType } from '../extension';
-import type { App } from '../server';
+import type { Keyable, Model, Serializable } from '../../interface/index.js';
+import { Serializer } from '../../interface/index.js';
+import type { ExtensionType } from '../extension.js';
+import type { App } from '../server/index.js';
 
-import { TableInfo } from './model/table-info';
+import { TableInfo } from './model/table-info.js';
 
 export interface Table<T extends Keyable> {
     readonly info: TableInfo;

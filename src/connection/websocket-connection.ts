@@ -1,7 +1,7 @@
-import type { EventJson } from '../event';
+import type { EventMessage } from '../event/event.js';
 
-import type { Address } from './address';
-import type { Connection, ConnectionListener, ConnectionStatus } from './connection';
+import type { Address } from './address.js';
+import type { Connection, ConnectionListener, ConnectionStatus } from './connection.js';
 
 export class WebsocketConnection implements Connection {
     public connected: boolean;
@@ -71,7 +71,7 @@ export class WebsocketConnection implements Connection {
         }
     }
 
-    send(event: EventJson): void {
+    send(event: EventMessage): void {
         if (!this.connected || !this.socket) {
             throw new Error('Not connected');
         }

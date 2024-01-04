@@ -1,10 +1,10 @@
-import type { Client } from '../../client';
-import type { ConnectionListener } from '../../connection';
-import { JsonEventType } from '../../event';
-import { JsonEndpointType } from '../endpoint/endpoint';
-import type { Extension } from '../extension';
-import { defineExtensionType } from '../extension';
-import { ExtensionInfo } from '../server/model/extension-info';
+import type { Client } from '../../client/index.js';
+import type { ConnectionListener } from '../../connection/index.js';
+import { JsonEventType } from '../../event/index.js';
+import { JsonEndpointType } from '../endpoint/endpoint.js';
+import type { Extension } from '../extension.js';
+import { defineExtensionType } from '../extension.js';
+import { ExtensionInfo } from '../server/model/extension-info.js';
 
 export const RegistryExtensionType = defineExtensionType({
     info: ExtensionInfo.create('registry'),

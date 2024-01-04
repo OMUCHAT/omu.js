@@ -1,20 +1,21 @@
-import type { App, ExtensionType } from 'src/extension';
+import type { App, ExtensionType } from '../extension/index.js';
+import { Serializer, type Serializable } from '../interface/index.js';
 
-import { Serializer, type Serializable } from '../interface';
+export type EventData = Uint8Array;
 
-export interface EventJson<T = any> {
-    readonly type: string;
-    readonly data: T;
+export interface EventMessage {
+    type: string;
+    data: EventData;
 }
 
-export interface EventType<T = any, D = any> {
+export interface EventType<T = any> {
     readonly type: string;
-    serializer: Serializable<T, D>;
+    serializer: Serializable<T, EventData>;
 }
 
-export class JsonEventType<T> implements EventType<T, T> {
+export class JsonEventType<T> implements EventType<T> {
     public readonly type: string;
-    public serializer: Serializable<T, T>;
+    public serializer: Serializable<T, EventData>;
 
     constructor({
         owner,
@@ -24,7 +25,16 @@ export class JsonEventType<T> implements EventType<T, T> {
         name: string;
     }) {
         this.type = `${owner}:${name}`;
-        this.serializer = Serializer.noop();
+        this.serializer = new Serializer<T, EventData>(
+            (data) => {
+                const json = JSON.stringify(data);
+                return new TextEncoder().encode(json);
+            },
+            (data) => {
+                const json = new TextDecoder().decode(data);
+                return JSON.parse(json);
+            },
+        );
     }
 
     static of<T>(app: App, {
@@ -44,9 +54,9 @@ export class JsonEventType<T> implements EventType<T, T> {
     }
 }
 
-export class SerializeEventType<T = any, D = any> implements EventType<T, D> {
+export class SerializeEventType<T = any> implements EventType<T> {
     public readonly type: string;
-    public serializer: Serializable<T, D>;
+    public serializer: Serializable<T, EventData>;
 
     constructor({
         owner,
@@ -55,33 +65,33 @@ export class SerializeEventType<T = any, D = any> implements EventType<T, D> {
     }: {
         owner: string;
         name: string;
-        serializer: Serializable<T, D>;
+        serializer: Serializable<T, EventData>;
     }) {
         this.type = `${owner}:${name}`;
         this.serializer = serializer;
     }
 
-    static of<T, D>({
+    static of<T>({
         owner,
         name,
         serializer,
     }: {
         owner: string;
         name: string;
-        serializer: Serializable<T, D>;
-    }): SerializeEventType<T, D> {
-        return new SerializeEventType<T, D>({ owner, name, serializer });
+        serializer: Serializable<T, EventData>;
+    }): SerializeEventType<T> {
+        return new SerializeEventType<T>({ owner, name, serializer });
     }
 
-    static ofExtension<T, D>({
+    static ofExtension<T>({
         extension,
         name,
         serializer,
     }: {
         extension: ExtensionType;
         name: string;
-        serializer: Serializable<T, D>;
-    }): SerializeEventType<T, D> {
-        return new SerializeEventType<T, D>({ owner: extension.key, name, serializer });
+        serializer: Serializable<T, EventData>;
+    }): SerializeEventType<T> {
+        return new SerializeEventType<T>({ owner: extension.key, name, serializer });
     }
 }

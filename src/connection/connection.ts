@@ -1,7 +1,7 @@
-import type { ClientListener } from '../client';
-import type { EventJson } from '../event';
+import type { ClientListener } from '../client/index.js';
+import type { EventMessage } from '../event/event.js';
 
-import type { Address } from './address';
+import type { Address } from './address.js';
 
 export type ConnectionStatus = 'connecting' | 'connected' | 'disconnected';
 
@@ -11,7 +11,7 @@ export interface Connection extends ClientListener {
 
     connect(): void;
     disconnect(): void;
-    send(event: EventJson): void;
+    send(event: EventMessage): void;
     status(): ConnectionStatus;
 
     proxy(url: string): string;
@@ -26,6 +26,6 @@ export interface Connection extends ClientListener {
 export interface ConnectionListener {
     onConnect?(): void;
     onDisconnect?(): void;
-    onEvent?(event: EventJson): void;
+    onEvent?(event: EventMessage): void;
     onStatusChanged?(status: ConnectionStatus): void;
 }

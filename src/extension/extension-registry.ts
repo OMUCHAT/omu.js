@@ -1,6 +1,6 @@
-import type { Client } from '../client';
+import type { Client } from '../client/index.js';
 
-import type { Extension, ExtensionType } from './extension';
+import type { Extension, ExtensionType } from './extension.js';
 
 export interface ExtensionRegistry {
     register<T extends Extension>(type: ExtensionType<T>): T;

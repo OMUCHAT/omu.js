@@ -1,21 +1,23 @@
-import { Serializer, type Serializable } from '../../interface/serializable';
-import type { ExtensionType } from '../extension';
-import type { App } from '../server';
+import type { EventData } from '../../event/event.js';
+import type { Json } from '../../index.js';
+import { Serializer, type Serializable } from '../../interface/serializable.js';
+import type { ExtensionType } from '../extension.js';
+import type { App } from '../server/index.js';
 
-import { EndpointInfo } from './model';
+import { EndpointInfo } from './model/index.js';
 
-export interface EndpointType<Req = unknown, Res = unknown, ReqData = unknown, ResData = unknown> {
+export interface EndpointType<Req = unknown, Res = unknown> {
     info: EndpointInfo;
     type: string;
-    requestSerializer: Serializable<Req, ReqData>;
-    responseSerializer: Serializable<Res, ResData>;
+    requestSerializer: Serializable<Req, EventData>;
+    responseSerializer: Serializable<Res, EventData>;
 }
 
-export class SerializeEndpointType<Req = unknown, Res = unknown> implements EndpointType<Req, Res, any, any> {
+export class SerializeEndpointType<Req = unknown, Res = unknown> implements EndpointType<Req, Res> {
     public info: EndpointInfo;
     public type: string;
-    public requestSerializer: Serializable<Req, any>;
-    public responseSerializer: Serializable<Res, any>;
+    public requestSerializer: Serializable<Req, EventData>;
+    public responseSerializer: Serializable<Res, EventData>;
 
     private constructor({
         info,
@@ -23,23 +25,23 @@ export class SerializeEndpointType<Req = unknown, Res = unknown> implements Endp
         responseSerializer,
     }: {
         info: EndpointInfo;
-        requestSerializer?: Serializable<Req, any>;
-        responseSerializer?: Serializable<Res, any>;
+        requestSerializer: Serializable<Req, EventData>;
+        responseSerializer: Serializable<Res, EventData>;
     }) {
         this.info = info;
         this.type = info.key();
-        this.requestSerializer = requestSerializer ?? Serializer.noop();
-        this.responseSerializer = responseSerializer ?? Serializer.noop();
+        this.requestSerializer = requestSerializer;
+        this.responseSerializer = responseSerializer;
     }
 
-    static of<Req, Res, ReqData, ResData>(app: App, {
+    static of<Req, Res>(app: App, {
         name,
         requestSerializer,
         responseSerializer,
     }: {
         name: string;
-        requestSerializer?: Serializable<Req, ReqData>;
-        responseSerializer?: Serializable<Res, ResData>;
+        requestSerializer: Serializable<Req, EventData>;
+        responseSerializer: Serializable<Res, EventData>;
     }): SerializeEndpointType<Req, Res> {
         return new SerializeEndpointType<Req, Res>({
             info: new EndpointInfo(app.key(), name),
@@ -48,14 +50,14 @@ export class SerializeEndpointType<Req = unknown, Res = unknown> implements Endp
         });
     }
 
-    static ofExtension<Req, Res, ReqData, ResData>(extension: ExtensionType, {
+    static ofExtension<Req, Res>(extension: ExtensionType, {
         name,
         requestSerializer,
         responseSerializer,
     }: {
         name: string;
-        requestSerializer?: Serializable<Req, ReqData>;
-        responseSerializer?: Serializable<Res, ResData>;
+        requestSerializer: Serializable<Req, EventData>;
+        responseSerializer: Serializable<Res, EventData>;
     }): SerializeEndpointType<Req, Res> {
         return new SerializeEndpointType<Req, Res>({
             info: new EndpointInfo(extension.key, name),
@@ -65,32 +67,64 @@ export class SerializeEndpointType<Req = unknown, Res = unknown> implements Endp
     }
 }
 
-export class JsonEndpointType<Req = unknown, Res = unknown> implements EndpointType<Req, Res, any, any> {
+export class JsonEndpointType<Req, Res> implements EndpointType<Req, Res> {
     public info: EndpointInfo;
     public type: string;
-    public requestSerializer: Serializable<Req, any>;
-    public responseSerializer: Serializable<Res, any>;
+    public requestSerializer: Serializable<Req, EventData>;
+    public responseSerializer: Serializable<Res, EventData>;
 
-    constructor(info: EndpointInfo) {
+    constructor({
+        info,
+        requestSerializer,
+        responseSerializer,
+    }: {
+        info: EndpointInfo;
+        requestSerializer: Serializable<Req, Json>;
+        responseSerializer: Serializable<Res, Json>;
+    }) {
         this.info = info;
         this.type = info.key();
-        this.requestSerializer = Serializer.noop();
-        this.responseSerializer = Serializer.noop();
+        this.requestSerializer = Serializer.builder<Req>()
+            .pipe(requestSerializer)
+            .pipe(Serializer.json())
+            .pipe(Serializer.textBytes())
+            .build();
+        this.responseSerializer = Serializer.builder<Res>()
+            .pipe(responseSerializer)
+            .pipe(Serializer.json())
+            .pipe(Serializer.textBytes())
+            .build();
     }
 
     static of<Req, Res>(app: App, {
         name,
+        requestSerializer,
+        responseSerializer,
     }: {
         name: string;
+        requestSerializer: Serializable<Req, Json>;
+        responseSerializer: Serializable<Res, Json>;
     }): JsonEndpointType<Req, Res> {
-        return new JsonEndpointType<Req, Res>(new EndpointInfo(app.key(), name));
+        return new JsonEndpointType<Req, Res>({
+            info: new EndpointInfo(app.key(), name),
+            requestSerializer,
+            responseSerializer,
+        });
     }
 
     static ofExtension<Req, Res>(extension: ExtensionType, {
         name,
+        requestSerializer,
+        responseSerializer,
     }: {
         name: string;
+        requestSerializer: Serializable<Req, Json>;
+        responseSerializer: Serializable<Res, Json>;
     }): JsonEndpointType<Req, Res> {
-        return new JsonEndpointType<Req, Res>(new EndpointInfo(extension.key, name));
+        return new JsonEndpointType<Req, Res>({
+            info: new EndpointInfo(extension.key, name),
+            requestSerializer,
+            responseSerializer,
+        });
     }
 }

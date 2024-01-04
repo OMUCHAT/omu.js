@@ -1,12 +1,12 @@
-import type { Client } from '../../client';
-import { JsonEventType } from '../../event';
-import { defineExtensionType } from '../extension';
-import { ExtensionInfo } from '../server';
-import type { Table } from '../table';
-import { ModelTableType } from '../table';
+import type { Client } from '../../client/index.js';
+import { JsonEventType } from '../../event/index.js';
+import { defineExtensionType } from '../extension.js';
+import { ExtensionInfo } from '../server/index.js';
+import type { Table } from '../table/index.js';
+import { ModelTableType } from '../table/index.js';
 
-import { JsonEndpointType, type EndpointType } from './endpoint';
-import { EndpointInfo } from './model';
+import { JsonEndpointType, type EndpointType } from './endpoint.js';
+import { EndpointInfo } from './model/index.js';
 
 export const EndpointExtensionType = defineExtensionType({
     info: ExtensionInfo.create('endpoint'),
@@ -65,7 +65,7 @@ export class EndpointExtension {
         });
     }
 
-    register<Req, Res, ReqData, ResData>(type: EndpointType<Req, Res, ReqData, ResData>): void {
+    register<Req, Res>(type: EndpointType<Req, Res>): void {
         if (this.endpointMap.has(type.type)) {
             throw new Error(`Endpoint for key ${type.type} already registered`);
         }
@@ -74,10 +74,10 @@ export class EndpointExtension {
 
     async call<Req, Res>(key: { name: string, app: string }, data: Req): Promise<Res> {
         const info = new EndpointInfo(key.app, key.name);
-        return await this.invoke<Req, Res, any, any>(new JsonEndpointType(info), data);
+        return await this.invoke<Req, Res>(new JsonEndpointType(info), data);
     }
 
-    async invoke<Req, Res, ReqData, ResData>(endpoint: EndpointType<Req, Res, ReqData, ResData>, data: Req): Promise<Res> {
+    async invoke<Req, Res>(endpoint: EndpointType<Req, Res>, data: Req): Promise<Res> {
         const json = endpoint.requestSerializer.serialize(data);
         try {
             const response = await this._call(endpoint, json);
@@ -87,9 +87,9 @@ export class EndpointExtension {
         }
     }
 
-    private _call<Req, Res, ReqData, ResData>(endpoint: EndpointType<Req, Res, ReqData, ResData>, data: ReqData): Promise<ResData> {
+    private _call<Req, Res>(endpoint: EndpointType<Req, Res>, data: Uint8Array): Promise<Uint8Array> {
         const key = this.key++;
-        const promise = new Promise<ResData>((resolve, reject) => {
+        const promise = new Promise<Uint8Array>((resolve, reject) => {
             this.promiseMap.set(key, { resolve, reject });
         });
         this.client.send(EndpointCallEvent, { type: endpoint.type, key, data });

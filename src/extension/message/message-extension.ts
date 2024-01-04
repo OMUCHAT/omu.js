@@ -1,9 +1,9 @@
-import type { Client } from '../../client';
-import type { ConnectionListener } from '../../connection';
-import { JsonEventType } from '../../event';
-import type { Extension } from '../extension';
-import { defineExtensionType } from '../extension';
-import { ExtensionInfo } from '../server';
+import type { Client } from '../../client/index.js';
+import type { ConnectionListener } from '../../connection/index.js';
+import { JsonEventType } from '../../event/index.js';
+import type { Extension } from '../extension.js';
+import { defineExtensionType } from '../extension.js';
+import { ExtensionInfo } from '../server/index.js';
 
 export const MessageExtensionType = defineExtensionType({
     info: ExtensionInfo.create('message'),

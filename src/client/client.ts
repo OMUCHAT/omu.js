@@ -1,7 +1,7 @@
-import type { Connection } from '../connection';
-import type { EventRegistry, EventType } from '../event';
-import type { App, ExtensionRegistry, MessageExtension, RegistryExtension, ServerExtension, TableExtension } from '../extension';
-import type { EndpointExtension } from '../extension/endpoint';
+import type { Connection } from '../connection/index.js';
+import type { EventRegistry, EventType } from '../event/index.js';
+import type { EndpointExtension } from '../extension/endpoint/index.js';
+import type { App, ExtensionRegistry, MessageExtension, RegistryExtension, ServerExtension, TableExtension } from '../extension/index.js';
 
 export interface ClientListener {
     onInitialized?(): void;

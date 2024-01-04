@@ -1,1 +1,1 @@
-export { TableInfo, type TableInfoJson } from './table-info';
+export { TableInfo, type TableInfoJson } from './table-info.js';

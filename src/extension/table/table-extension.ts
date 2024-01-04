@@ -1,15 +1,14 @@
-import type { Client } from '../../client';
-import { JsonEventType, SerializeEventType } from '../../event';
-import { Serializer, type Keyable } from '../../interface';
-import { JsonEndpointType } from '../endpoint/endpoint';
-import type { Extension, ExtensionType } from '../extension';
-import { defineExtensionType } from '../extension';
-import { ExtensionInfo } from '../server/model/extension-info';
+import type { Client } from '../../client/index.js';
+import { JsonEventType, SerializeEventType } from '../../event/index.js';
+import { Serializer, type Keyable } from '../../interface/index.js';
+import { JsonEndpointType } from '../endpoint/endpoint.js';
+import type { Extension, ExtensionType } from '../extension.js';
+import { defineExtensionType } from '../extension.js';
+import { ExtensionInfo } from '../server/model/extension-info.js';
 
-import type { TableInfoJson } from './model/table-info';
-import { TableInfo } from './model/table-info';
-import type { Table, TableListener, TableType } from './table';
-import { ModelTableType } from './table';
+import { TableInfo } from './model/table-info.js';
+import type { Table, TableListener, TableType } from './table.js';
+import { ModelTableType } from './table.js';
 
 export const TableExtensionType: ExtensionType<TableExtension> = defineExtensionType({
     info: ExtensionInfo.create('table'),
@@ -18,10 +17,10 @@ export const TableExtensionType: ExtensionType<TableExtension> = defineExtension
 type TableEventData = { type: string; }
 type TableItemsEventData = TableEventData & { items: Record<string, any> };
 type TableProxyEventData = TableEventData & { items: Record<string, any>, key: number };
-export const TableRegisterEvent = SerializeEventType.ofExtension<TableInfo, TableInfoJson>({
+export const TableRegisterEvent = SerializeEventType.ofExtension<TableInfo>({
     extension: TableExtensionType,
     name: 'register',
-    serializer: Serializer.model(TableInfo),
+    serializer: Serializer.modelBytes(TableInfo),
 });
 export const TableListenEvent = JsonEventType.ofExtension<string>(TableExtensionType, {
     name: 'listen',

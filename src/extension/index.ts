@@ -1,8 +1,8 @@
-export * from './endpoint';
-export * from './extension';
-export * from './extension-registry';
-export * from './message';
-export * from './registry';
-export * from './server';
-export * from './table';
+export * from './endpoint/index.js';
+export * from './extension-registry.js';
+export * from './extension.js';
+export * from './message/index.js';
+export * from './registry/index.js';
+export * from './server/index.js';
+export * from './table/index.js';
 

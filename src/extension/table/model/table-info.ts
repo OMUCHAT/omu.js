@@ -1,6 +1,6 @@
-import type { Keyable, Model } from '../../../interface';
-import type { ExtensionType } from '../../extension';
-import type { App } from '../../server';
+import type { Keyable, Model } from '../../../interface/index.js';
+import type { ExtensionType } from '../../extension.js';
+import type { App } from '../../server/index.js';
 
 export interface TableInfoJson {
     owner: string;
