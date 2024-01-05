@@ -1,8 +1,8 @@
-import { Serializer, type Serializable } from '../../interface/serializable';
-import type { ExtensionType } from '../extension';
-import type { App } from '../server';
+import { Serializer, type Serializable } from '../../interface/serializable.js';
+import type { ExtensionType } from '../extension.js';
+import type { App } from '../server/index.js';
 
-import { EndpointInfo } from './model';
+import { EndpointInfo } from './model/index.js';
 
 export interface EndpointType<Req = unknown, Res = unknown, ReqData = unknown, ResData = unknown> {
     info: EndpointInfo;

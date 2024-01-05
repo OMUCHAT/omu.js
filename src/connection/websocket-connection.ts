@@ -1,7 +1,9 @@
-import type { EventJson } from '../event';
+import type { Client } from 'src/index.js';
 
-import type { Address } from './address';
-import type { Connection, ConnectionListener, ConnectionStatus } from './connection';
+import type { EventJson } from '../event/index.js';
+
+import type { Address } from './address.js';
+import type { Connection, ConnectionListener, ConnectionStatus } from './connection.js';
 
 export class WebsocketConnection implements Connection {
     public connected: boolean;
@@ -10,10 +12,11 @@ export class WebsocketConnection implements Connection {
     private socket: WebSocket | null;
     private tasks: (() => void)[] = [];
 
-    constructor(address: Address) {
-        this.address = address;
+    constructor(client: Client) {
+        this.address = client.address;
         this.connected = false;
         this.socket = null;
+        client.addListener(this);
     }
 
     connect(): void {

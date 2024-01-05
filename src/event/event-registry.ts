@@ -1,10 +1,10 @@
 
-import type { Client } from '../client';
-import { App } from '../extension';
-import type { Serializable } from '../interface/serializable';
-import { Serializer } from '../interface/serializable';
+import type { Client } from '../client/index.js';
+import { App } from '../extension/server/index.js';
+import type { Serializable } from '../interface/serializable.js';
+import { Serializer } from '../interface/serializable.js';
 
-import type { EventJson, EventType } from './event';
+import type { EventJson, EventType } from './event.js';
 
 export interface EventRegistry {
     register(...types: EventType[]): void;

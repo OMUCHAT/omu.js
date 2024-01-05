@@ -1,23 +1,8 @@
-import type { Client } from '../../client';
-import type { ConnectionListener } from '../../connection';
-import { JsonEventType } from '../../event';
-import type { Extension } from '../extension';
-import { defineExtensionType } from '../extension';
-import { ExtensionInfo } from '../server';
-
-export const MessageExtensionType = defineExtensionType({
-    info: ExtensionInfo.create('message'),
-    create: (client: Client) => new MessageExtension(client),
-});
-export const MessageRegisterEvent = JsonEventType.ofExtension<string>(MessageExtensionType, {
-    name: 'register',
-});
-export const MessageListenEvent = JsonEventType.ofExtension<string>(MessageExtensionType, {
-    name: 'listen',
-});
-export const MessageBroadcastEvent = JsonEventType.ofExtension<{ key: string, body: any }>(MessageExtensionType, {
-    name: 'broadcast',
-});
+import type { Client } from '../../client/index.js';
+import type { ConnectionListener } from '../../connection/index.js';
+import { JsonEventType } from '../../event/index.js';
+import type { Extension } from '../extension.js';
+import { defineExtensionType } from '../extension.js';
 
 type Key = { name: string, app?: string };
 
@@ -30,7 +15,7 @@ export class MessageExtension implements Extension, ConnectionListener {
         client.connection.addListener(this);
     }
 
-    register<T>(key: Key): void {
+    register(key: Key): void {
         if (this.keys.has(key.name)) {
             throw new Error(`Key ${key.name} already registered`);
         }
@@ -67,3 +52,16 @@ export class MessageExtension implements Extension, ConnectionListener {
         }
     }
 }
+
+export const MessageExtensionType = defineExtensionType('message', {
+    create: (client: Client) => new MessageExtension(client),
+});
+export const MessageRegisterEvent = JsonEventType.ofExtension<string>(MessageExtensionType, {
+    name: 'register',
+});
+export const MessageListenEvent = JsonEventType.ofExtension<string>(MessageExtensionType, {
+    name: 'listen',
+});
+export const MessageBroadcastEvent = JsonEventType.ofExtension<{ key: string, body: any }>(MessageExtensionType, {
+    name: 'broadcast',
+});

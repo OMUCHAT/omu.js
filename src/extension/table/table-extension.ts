@@ -1,18 +1,16 @@
-import type { Client } from '../../client';
-import { JsonEventType, SerializeEventType } from '../../event';
-import { Serializer, type Keyable } from '../../interface';
-import { JsonEndpointType } from '../endpoint/endpoint';
-import type { Extension, ExtensionType } from '../extension';
-import { defineExtensionType } from '../extension';
-import { ExtensionInfo } from '../server/model/extension-info';
+import type { Client } from '../../client/index.js';
+import { JsonEventType, SerializeEventType } from '../../event/event.js';
+import { Serializer, type Keyable } from '../../interface/index.js';
+import { JsonEndpointType } from '../endpoint/endpoint.js';
+import type { Extension, ExtensionType } from '../extension.js';
+import { defineExtensionType } from '../extension.js';
 
-import type { TableInfoJson } from './model/table-info';
-import { TableInfo } from './model/table-info';
-import type { Table, TableListener, TableType } from './table';
-import { ModelTableType } from './table';
+import type { TableInfoJson } from './model/table-info.js';
+import { TableInfo } from './model/table-info.js';
+import type { Table, TableListener, TableType } from './table.js';
+import { ModelTableType } from './table.js';
 
-export const TableExtensionType: ExtensionType<TableExtension> = defineExtensionType({
-    info: ExtensionInfo.create('table'),
+export const TableExtensionType: ExtensionType<TableExtension> = defineExtensionType('table', {
     create: (client: Client) => new TableExtension(client),
 });
 type TableEventData = { type: string; }
@@ -133,7 +131,7 @@ class TableImpl<T extends Keyable> implements Table<T> {
                     return typeof item !== 'undefined';
                 }));
             });
-            client.endpoints.invoke(TableProxyEndpoint, {
+            client.endpoints.call(TableProxyEndpoint, {
                 type: this.key,
                 key: event.key,
                 items: Object.fromEntries([...items.entries()].map(([key, item]) => {
@@ -258,7 +256,7 @@ class TableImpl<T extends Keyable> implements Table<T> {
         if (this.cache.has(key)) {
             return this.cache.get(key);
         }
-        const res = await this.client.endpoints.invoke(TableItemGetEndpoint, {
+        const res = await this.client.endpoints.call(TableItemGetEndpoint, {
             type: this.key,
             items: [key],
         });
@@ -268,7 +266,7 @@ class TableImpl<T extends Keyable> implements Table<T> {
     }
 
     async getMany(keys: string[]): Promise<Map<string, T>> {
-        const res = await this.client.endpoints.invoke(TableItemGetEndpoint, {
+        const res = await this.client.endpoints.call(TableItemGetEndpoint, {
             type: this.key,
             items: keys,
         });
@@ -314,7 +312,7 @@ class TableImpl<T extends Keyable> implements Table<T> {
     }
 
     async fetch({ before, after, cursor }: { before: number, after: number, cursor?: string }): Promise<Map<string, T>> {
-        const res = await this.client.endpoints.invoke(TableItemFetchEndpoint, {
+        const res = await this.client.endpoints.call(TableItemFetchEndpoint, {
             type: this.key,
             before,
             after,
@@ -344,7 +342,7 @@ class TableImpl<T extends Keyable> implements Table<T> {
     }
 
     async size(): Promise<number> {
-        return await this.client.endpoints.invoke(TableItemSizeEndpoint, {
+        return await this.client.endpoints.call(TableItemSizeEndpoint, {
             type: this.key,
         });
     }

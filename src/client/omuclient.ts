@@ -1,10 +1,23 @@
+import type { Address, Connection, ConnectionListener } from '../connection/index.js';
+import { WebsocketConnection } from '../connection/websocket-connection.js';
+import type { EventRegistry, EventType } from '../event/index.js';
+import { EVENTS, createEventRegistry } from '../event/index.js';
+import type { AssetExtension } from '../extension/asset/asset-extension.js';
+import { AssetExtensionType } from '../extension/asset/asset-extension.js';
+import type { EndpointExtension } from '../extension/endpoint/endpoint-extension.js';
+import { EndpointExtensionType } from '../extension/endpoint/endpoint-extension.js';
+import { createExtensionRegistry, type ExtensionRegistry } from '../extension/extension-registry.js';
+import type { Extension, ExtensionType } from '../extension/extension.js';
+import type { MessageExtension } from '../extension/message/message-extension.js';
+import { MessageExtensionType } from '../extension/message/message-extension.js';
+import type { RegistryExtension } from '../extension/registry/registry-extension.js';
+import { RegistryExtensionType } from '../extension/registry/registry-extension.js';
+import type { App, ServerExtension } from '../extension/server/index.js';
+import { ServerExtensionType } from '../extension/server/index.js';
+import type { TableExtension } from '../extension/table/table-extension.js';
+import { TableExtensionType } from '../extension/table/table-extension.js';
 
-import { WebsocketConnection, type Address, type Connection, type ConnectionListener } from '../connection';
-import { EVENTS, createEventRegistry, type EventRegistry, type EventType } from '../event';
-import type { App, EndpointExtension, Extension, ExtensionRegistry, ExtensionType, MessageExtension, RegistryExtension, ServerExtension, TableExtension } from '../extension';
-import { EndpointExtensionType, MessageExtensionType, RegistryExtensionType, ServerExtensionType, TableExtensionType, createExtensionRegistry } from '../extension';
-
-import { type Client, type ClientListener } from './client';
+import type { Client, ClientListener } from './client.js';
 
 export class OmuClient implements Client, ConnectionListener {
     readonly app: App;
@@ -16,6 +29,7 @@ export class OmuClient implements Client, ConnectionListener {
     readonly tables: TableExtension;
     readonly registry: RegistryExtension;
     readonly message: MessageExtension;
+    readonly assets: AssetExtension;
     readonly server: ServerExtension;
     readonly listeners: ClientListener[];
     public running: boolean;
@@ -33,7 +47,7 @@ export class OmuClient implements Client, ConnectionListener {
         this.listeners = [];
         this.app = app;
         this.address = options.address;
-        this.connection = connection ?? new WebsocketConnection(options.address);
+        this.connection = connection ?? new WebsocketConnection(this);
         this.connection.addListener(this);
         this.events = eventsRegistry ?? createEventRegistry(this);
         this.extensions = extensionRegistry ?? createExtensionRegistry(this);
@@ -44,11 +58,11 @@ export class OmuClient implements Client, ConnectionListener {
         this.server = this.extensions.register(ServerExtensionType);
         this.registry = this.extensions.register(RegistryExtensionType);
         this.message = this.extensions.register(MessageExtensionType);
+        this.assets = this.extensions.register(AssetExtensionType);
         if (extensions) {
             this.extensions.registerAll(extensions);
         }
 
-        this.addListener(this.connection);
         this.events.addListener(EVENTS.Ready, () => {
             this.listeners.forEach((listener) => {
                 listener.onReady?.();

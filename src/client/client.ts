@@ -1,7 +1,12 @@
-import type { Connection } from '../connection';
-import type { EventRegistry, EventType } from '../event';
-import type { App, ExtensionRegistry, MessageExtension, RegistryExtension, ServerExtension, TableExtension } from '../extension';
-import type { EndpointExtension } from '../extension/endpoint';
+import type { Address, Connection } from '../connection/index.js';
+import type { EventRegistry, EventType } from '../event/index.js';
+import type { AssetExtension } from '../extension/asset/asset-extension.js';
+import type { EndpointExtension } from '../extension/endpoint/index.js';
+import type { ExtensionRegistry } from '../extension/extension-registry.js';
+import type { MessageExtension } from '../extension/message/message-extension.js';
+import type { RegistryExtension } from '../extension/registry/registry-extension.js';
+import type { App, ServerExtension } from '../extension/server/index.js';
+import type { TableExtension } from '../extension/table/table-extension.js';
 
 export interface ClientListener {
     onInitialized?(): void;
@@ -12,6 +17,7 @@ export interface ClientListener {
 
 export interface Client {
     readonly app: App;
+    readonly address: Address;
     readonly connection: Connection;
     readonly events: EventRegistry;
     readonly extensions: ExtensionRegistry;
@@ -19,6 +25,7 @@ export interface Client {
     readonly tables: TableExtension;
     readonly registry: RegistryExtension;
     readonly message: MessageExtension;
+    readonly assets: AssetExtension;
     readonly server: ServerExtension;
     readonly running: boolean;
 

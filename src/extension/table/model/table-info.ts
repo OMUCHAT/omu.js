@@ -1,6 +1,6 @@
-import type { Keyable, Model } from '../../../interface';
-import type { ExtensionType } from '../../extension';
-import type { App } from '../../server';
+import type { Keyable, Model } from '../../../interface/index.js';
+import type { ExtensionType } from '../../extension.js';
+import type { App } from '../../server/index.js';
 
 export interface TableInfoJson {
     owner: string;
@@ -40,9 +40,6 @@ export class TableInfo implements Keyable, Model<TableInfoJson> {
         this.useDatabase = useDatabase;
         this.cache = cache;
         this.cacheSize = cacheSize;
-    }
-    toString(): string {
-        throw new Error('Method not implemented.');
     }
 
     static fromJson(json: TableInfoJson): TableInfo {
@@ -86,7 +83,7 @@ export class TableInfo implements Keyable, Model<TableInfoJson> {
         cacheSize?: number;
     }): TableInfo {
         return new TableInfo({
-            owner: extensionType.info.key(),
+            owner: extensionType.key,
             name,
             description,
             useDatabase,

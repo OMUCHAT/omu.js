@@ -1,1 +1,1 @@
-export { MessageExtension, MessageExtensionType } from './message-extension';
+export { MessageExtension, MessageExtensionType } from './message-extension.js';

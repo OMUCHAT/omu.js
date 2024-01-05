@@ -1,1 +1,1 @@
-export { RegistryExtension, RegistryExtensionType } from './registry-extension';
+export { RegistryExtension, RegistryExtensionType } from './registry-extension.js';

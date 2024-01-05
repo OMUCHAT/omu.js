@@ -1,4 +1,4 @@
-import type { Json } from './json';
+import type { Json } from './json.js';
 
 export interface Model<T extends Json> {
     toJson(): T;

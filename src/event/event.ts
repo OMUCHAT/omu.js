@@ -1,6 +1,6 @@
-import type { App, ExtensionType } from 'src/extension';
-
-import { Serializer, type Serializable } from '../interface';
+import type { ExtensionType } from '../extension/index.js';
+import type { App } from '../extension/server/index.js';
+import { Serializer, type Serializable } from '../interface/index.js';
 
 export interface EventJson<T = any> {
     readonly type: string;

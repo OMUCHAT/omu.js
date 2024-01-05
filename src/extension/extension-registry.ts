@@ -1,6 +1,6 @@
-import type { Client } from '../client';
+import type { Client } from '../client/index.js';
 
-import type { Extension, ExtensionType } from './extension';
+import type { Extension, ExtensionType } from './extension.js';
 
 export interface ExtensionRegistry {
     register<T extends Extension>(type: ExtensionType<T>): T;
@@ -14,15 +14,15 @@ export function createExtensionRegistry(client: Client): ExtensionRegistry {
 
     function register<T extends Extension>(type: ExtensionType<T>): T {
         if (has(type)) {
-            throw new Error(`Extension type ${type.info.key()} already registered`);
+            throw new Error(`Extension type ${type.key} already registered`);
         }
         type.dependencies?.().forEach((dependency) => {
             if (!has(dependency)) {
-                throw new Error(`Extension type ${type.info.key()} depends on ${dependency.info.key()} which is not registered`);
+                throw new Error(`Extension type ${type.key} depends on ${dependency.key} which is not registered`);
             }
         });
         const extension = type.create(client);
-        extensionMap.set(type.info.key(), extension);
+        extensionMap.set(type.key, extension);
         return extension;
     }
 
@@ -31,15 +31,15 @@ export function createExtensionRegistry(client: Client): ExtensionRegistry {
     }
 
     function get<Ext extends Extension>(extensionType: ExtensionType<Ext>): Ext {
-        const extension = extensionMap.get(extensionType.info.key());
+        const extension = extensionMap.get(extensionType.key);
         if (!extension) {
-            throw new Error(`Extension type ${extensionType.info.key()} not registered`);
+            throw new Error(`Extension type ${extensionType.key} not registered`);
         }
         return extension as Ext;
     }
 
     function has<T extends Extension>(extensionType: ExtensionType<T>): boolean {
-        return extensionMap.has(extensionType.info.key());
+        return extensionMap.has(extensionType.key);
     }
 
     return {

@@ -1,4 +1,4 @@
-import type { Keyable, Model } from '../../../interface';
+import type { Keyable, Model } from '../../../interface/index.js';
 
 export interface ExtensionInfoJson {
     name: string;

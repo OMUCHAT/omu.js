@@ -1,3 +1,3 @@
-export * from './model';
-export * from './server-extension';
+export * from './model/index.js';
+export * from './server-extension.js';
 

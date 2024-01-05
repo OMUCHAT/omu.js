@@ -1,4 +1,4 @@
-import type { Model } from './model';
+import type { Model } from './model.js';
 
 export interface Serializable<T, D> {
     serialize(data: T): D;

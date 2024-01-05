@@ -1,7 +1,6 @@
-import { App, type AppJson } from './app';
-import { ExtensionInfo, type ExtensionInfoJson } from './extension-info';
+import { App, type AppJson } from './app.js';
 
 export {
-    App, ExtensionInfo, type AppJson, type ExtensionInfoJson,
+    App, type AppJson
 };
 

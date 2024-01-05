@@ -1,5 +1,5 @@
-import type { Keyable, Model } from '../../../interface';
-import type { ExtensionType } from '../../extension';
+import type { Keyable, Model } from '../../../interface/index.js';
+import type { ExtensionType } from '../../extension.js';
 
 export interface EndpointInfoJson {
     owner: string;
@@ -13,16 +13,13 @@ export class EndpointInfo implements Keyable, Model<EndpointInfoJson> {
         public name: string,
         public description?: string,
     ) {}
-    toString(): string {
-        throw new Error('Method not implemented.');
-    }
 
     static fromJson(json: EndpointInfoJson): EndpointInfo {
         return new EndpointInfo(json.owner, json.name, json.description);
     }
 
     static create(extensionType: ExtensionType, name: string, description?: string): EndpointInfo {
-        return new EndpointInfo(extensionType.info.key(), name, description);
+        return new EndpointInfo(extensionType.key, name, description);
     }
 
     key(): string {
