@@ -1,6 +1,6 @@
-import type { Client } from 'src/index.js';
-
-import type { EventJson } from '../event/index.js';
+import { ConnectEvent } from '../event/event-registry.js';
+import { EVENTS, type EventType } from '../event/index.js';
+import type { Client } from '../index.js';
 
 import type { Address } from './address.js';
 import type { Connection, ConnectionListener, ConnectionStatus } from './connection.js';
@@ -12,7 +12,7 @@ export class WebsocketConnection implements Connection {
     private socket: WebSocket | null;
     private tasks: (() => void)[] = [];
 
-    constructor(client: Client) {
+    constructor(private readonly client: Client) {
         this.address = client.address;
         this.connected = false;
         this.socket = null;
@@ -30,8 +30,9 @@ export class WebsocketConnection implements Connection {
         this.socket.onmessage = this.onMessage.bind(this);
     }
 
-    private onOpen(): void {
+    private async onOpen(): Promise<void> {
         this.connected = true;
+        this.send(EVENTS.Connect, new ConnectEvent(this.client.app, await this.client.token.get()));
         this.listeners.forEach((listener) => {
             listener.onConnect?.();
             listener.onStatusChanged?.('connected');
@@ -74,11 +75,14 @@ export class WebsocketConnection implements Connection {
         }
     }
 
-    send(event: EventJson): void {
+    send<T>(event: EventType<T, unknown>, data: T): void {
         if (!this.connected || !this.socket) {
             throw new Error('Not connected');
         }
-        this.socket.send(JSON.stringify(event));
+        this.socket.send(JSON.stringify({
+            type: event.type,
+            data: event.serializer.serialize(data),
+        }));
     }
 
     status(): ConnectionStatus {

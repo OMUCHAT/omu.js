@@ -1,4 +1,4 @@
-import type { EventJson } from '../event/index.js';
+import type { EventJson, EventType } from '../event/index.js';
 
 import type { Address } from './address.js';
 
@@ -10,7 +10,7 @@ export interface Connection {
 
     connect(): void;
     disconnect(): void;
-    send(event: EventJson): void;
+    send<T>(event: EventType<T, unknown>, data: T): void;
     status(): ConnectionStatus;
 
     proxy(url: string): string;

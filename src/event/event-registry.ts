@@ -1,6 +1,7 @@
-
 import type { Client } from '../client/index.js';
+import type { AppJson } from '../extension/server/index.js';
 import { App } from '../extension/server/index.js';
+import type { Model } from '../interface/model.js';
 import type { Serializable } from '../interface/serializable.js';
 import { Serializer } from '../interface/serializable.js';
 
@@ -78,7 +79,26 @@ function defineEvent<T, D>(type: string, serializer: Serializable<T, D>): EventT
     };
 }
 
+type ConnectEventData = { app: AppJson; token: string | null };
+
+export class ConnectEvent implements Model<ConnectEventData> {
+    constructor(public app: App, public token: string | null) {
+    }
+
+    toJson(): ConnectEventData {
+        return {
+            app: this.app.toJson(),
+            token: this.token,
+        };
+    }
+
+    static fromJson(json: ConnectEventData): ConnectEvent {
+        return new ConnectEvent(App.fromJson(json.app), json.token);
+    }
+}
+
 export const EVENTS = {
-    Connect: defineEvent('connect', Serializer.model(App)),
+    Connect: defineEvent('connect', Serializer.model(ConnectEvent)),
+    Token: defineEvent('token', Serializer.noop<string>()),
     Ready: defineEvent<undefined, undefined>('ready', Serializer.noop()),
 };

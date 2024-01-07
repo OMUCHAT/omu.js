@@ -18,9 +18,11 @@ import type { TableExtension } from '../extension/table/table-extension.js';
 import { TableExtensionType } from '../extension/table/table-extension.js';
 
 import type { Client, ClientListener } from './client.js';
+import type { TokenProvider } from './token.js';
 
 export class OmuClient implements Client, ConnectionListener {
     readonly app: App;
+    readonly token: TokenProvider;
     readonly address: Address;
     readonly connection: Connection;
     readonly events: EventRegistry;
@@ -37,22 +39,24 @@ export class OmuClient implements Client, ConnectionListener {
     constructor(options: {
         app: App;
         address: Address;
+        token: TokenProvider;
         connection?: Connection;
         eventsRegistry?: EventRegistry;
         extensionRegistry?: ExtensionRegistry;
         extensions?: ExtensionType<Extension>[]
     }) {
-        const { app, connection, eventsRegistry, extensionRegistry, extensions } = options;
+        const { connection, eventsRegistry, extensionRegistry, extensions } = options;
         this.running = false;
         this.listeners = [];
-        this.app = app;
+        this.app = options.app;
         this.address = options.address;
+        this.token = options.token;
         this.connection = connection ?? new WebsocketConnection(this);
         this.connection.addListener(this);
         this.events = eventsRegistry ?? createEventRegistry(this);
         this.extensions = extensionRegistry ?? createExtensionRegistry(this);
 
-        this.events.register(EVENTS.Ready);
+        this.events.register(EVENTS.Ready, EVENTS.Token);
         this.tables = this.extensions.register(TableExtensionType);
         this.endpoints = this.extensions.register(EndpointExtensionType);
         this.server = this.extensions.register(ServerExtensionType);
@@ -68,6 +72,9 @@ export class OmuClient implements Client, ConnectionListener {
                 listener.onReady?.();
             });
         });
+        this.events.addListener(EVENTS.Token, (token) => {
+            this.token.set(token);
+        });
         this.listeners.forEach((listener) => {
             listener.onInitialized?.();
         });
@@ -81,10 +88,6 @@ export class OmuClient implements Client, ConnectionListener {
         return this.connection.asset(url);
     }
 
-    onConnect(): void {
-        this.send(EVENTS.Connect, this.app);
-    }
-
     onDisconnect(): void {
         if (this.running) {
             this.connection.connect();
@@ -92,10 +95,7 @@ export class OmuClient implements Client, ConnectionListener {
     }
 
     send<T, D>(event: EventType<T, D>, data: T): void {
-        this.connection.send({
-            type: event.type,
-            data: event.serializer.serialize(data),
-        });
+        this.connection.send(event, data);
     }
 
     addListener(listener: ClientListener): void {

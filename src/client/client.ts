@@ -8,6 +8,8 @@ import type { RegistryExtension } from '../extension/registry/registry-extension
 import type { App, ServerExtension } from '../extension/server/index.js';
 import type { TableExtension } from '../extension/table/table-extension.js';
 
+import type { TokenProvider } from './token.js';
+
 export interface ClientListener {
     onInitialized?(): void;
     onStarted?(): void;
@@ -17,6 +19,7 @@ export interface ClientListener {
 
 export interface Client {
     readonly app: App;
+    readonly token: TokenProvider;
     readonly address: Address;
     readonly connection: Connection;
     readonly events: EventRegistry;
