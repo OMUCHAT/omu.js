@@ -2,9 +2,11 @@
     "name": "@omuchat/omu.js",
     "version": "0.0.0",
     "scripts": {
+        "prepare": "npm run build",
         "ts": "npm run ts-esm && npm run ts-dts",
         "ts-esm": "tsc --outDir built/esm",
         "ts-dts": "tsc --outDir built/dts --declaration true --emitDeclarationOnly true --declarationMap true",
+        "build": "npm run ts",
         "lint": "eslint . --ext .js,.ts",
         "fix": "eslint . --ext .js,.ts --fix"
     },
